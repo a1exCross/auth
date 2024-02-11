@@ -30,7 +30,7 @@ func (s server) Create(_ context.Context, req *descUser.CreateRequest) (*descUse
 
 	id, err := rand.Int(rand.Reader, big.NewInt(123))
 	if err != nil {
-		return &descUser.CreateResponse{}, fmt.Errorf("failed to generate id: %v", err)
+		return nil, fmt.Errorf("failed to generate id: %v", err)
 	}
 
 	user = &descUser.User{
@@ -55,7 +55,7 @@ func (s server) Get(_ context.Context, req *descUser.GetRequest) (*descUser.GetR
 		}, nil
 	}
 
-	return &descUser.GetResponse{}, fmt.Errorf("user not found")
+	return nil, fmt.Errorf("user not found")
 }
 
 func (s server) Update(_ context.Context, req *descUser.UpdateRequest) (*emptypb.Empty, error) {
@@ -82,7 +82,7 @@ func (s server) Delete(_ context.Context, req *descUser.DeleteRequest) (*emptypb
 		return &emptypb.Empty{}, nil
 	}
 
-	return &emptypb.Empty{}, fmt.Errorf("user not found")
+	return nil, fmt.Errorf("user not found")
 }
 
 func main() {
