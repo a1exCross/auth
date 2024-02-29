@@ -43,10 +43,10 @@ const (
 )
 
 func (s service) Get(ctx context.Context, req *pbUser.GetRequest) (*pbUser.GetResponse, error) {
-	selectBuilder := sq.Select(id, name, email, role, "created_at", "updated_at").
+	selectBuilder := sq.Select(id, name, email, role, createdAt, updatedAt).
 		PlaceholderFormat(sq.Dollar).
 		From(table).
-		Where("id = ?", req.GetId())
+		Where(fmt.Sprintf("%s = ?", id), req.GetId())
 
 	query, args, err := selectBuilder.ToSql()
 	if err != nil {
@@ -102,7 +102,7 @@ func (s service) Create(ctx context.Context, req *pbUser.CreateRequest) (*pbUser
 		PlaceholderFormat(sq.Dollar).
 		Columns(name, email, role, password).
 		Values(req.Info.GetName(), req.Info.GetEmail(), req.Info.GetRole(), string(hashedPassword)).
-		Suffix("RETURNING id")
+		Suffix(fmt.Sprintf("RETURNING %s", id))
 
 	query, args, err := insertBuilder.ToSql()
 	if err != nil {
@@ -127,7 +127,7 @@ func (s service) Update(ctx context.Context, req *pbUser.UpdateRequest) (*empty.
 		Set(name, req.GetName().Value).
 		Set(email, req.GetEmail().Value).
 		Set(role, req.GetRole()).
-		Where("id = ?", req.GetId())
+		Where(fmt.Sprintf("%s = ?", id), req.GetId())
 
 	query, args, err := updateBuilder.ToSql()
 	if err != nil {
@@ -144,7 +144,7 @@ func (s service) Update(ctx context.Context, req *pbUser.UpdateRequest) (*empty.
 
 func (s service) Delete(ctx context.Context, req *pbUser.DeleteRequest) (*empty.Empty, error) {
 	deleteBuilder := sq.Delete(table).
-		Where("id = ?", req.GetId()).
+		Where(fmt.Sprintf("%s = ?", id), req.GetId()).
 		PlaceholderFormat(sq.Dollar)
 
 	query, args, err := deleteBuilder.ToSql()

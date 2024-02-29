@@ -2,7 +2,7 @@ name: git_actions
 
 on:
   push:
-    branches: [ second_week ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -39,27 +39,43 @@ jobs:
       - name: Login to Docker registry
         run: docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} $REGISTRY
 
+      - name: Create env file
+        run: |
+          cd config/prod/
+          touch .env
+          echo POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          echo POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          echo MIGRATION_DIR=${{ secrets.MIGRATION_DIR }}
+          
+          echo PG_DSN=${{ secrets.PG_DSN }}
+          echo MIGRATION_DSN=${{ secrets.MIGRATION_DSN }}
+        
+          echo GRPC_HOST=${{ secrets.GRPC_HOST }}
+          echo GRPC_PORT=${{ secrets.GRPC_PORT }}
+          cat .env
+
       - name: Build and push image
         run: |
           TAG_NAME=$(echo $GITHUB_SHA | head -c7)
           docker buildx create --use
           docker buildx build --no-cache --push --tag $REGISTRY/$IMAGE_NAME:$TAG_NAME .
 
-  deploy-image:
-    runs-on: ubuntu-latest
-    needs: build-and-push
-
-    steps:
-      - name: Deploy to Selectel
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSHKEY }}
-          envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,CONTAINER_NAME
-          script: |
-            TAG_NAME=$(echo $GITHUB_SHA | head -c7)
-            docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} $REGISTRY
-            docker stop $CONTAINER_NAME
-            docker rm $CONTAINER_NAME
-            docker run -d -p 50051:50051 --name $CONTAINER_NAME -t $REGISTRY/$IMAGE_NAME:$TAG_NAME
+#  deploy-image:
+#    runs-on: ubuntu-latest
+#    needs: build-and-push
+#
+#    steps:
+#      - name: Deploy to Selectel
+#        uses: appleboy/ssh-action@v1.0.0
+#        with:
+#          host: ${{ secrets.SERVER_HOST }}
+#          username: ${{ secrets.SSH_USERNAME }}
+#          key: ${{ secrets.SSHKEY }}
+#          envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,CONTAINER_NAME
+#          script: |
+#            TAG_NAME=$(echo $GITHUB_SHA | head -c7)
+#            docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} $REGISTRY
+#            docker stop $CONTAINER_NAME
+#            docker rm $CONTAINER_NAME
+#            docker run -d -p 50051:50051 --name $CONTAINER_NAME -t $REGISTRY/$IMAGE_NAME:$TAG_NAME

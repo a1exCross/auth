@@ -1,13 +1,13 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE users (
-    id serial primary key,
-    name text not null,
-    email text,
-    role integer,
-    password varchar,
-    created_at timestamp not null default now(),
-    updated_at timestamp
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT,
+    role INTEGER,
+    password VARCHAR,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP
 );
 -- +goose StatementEnd
 
