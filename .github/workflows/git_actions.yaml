@@ -53,7 +53,6 @@ jobs:
         
           echo GRPC_HOST=${{ secrets.GRPC_HOST }}
           echo GRPC_PORT=${{ secrets.GRPC_PORT }}
-          cat .env
 
       - name: Build and push image
         run: |

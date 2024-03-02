@@ -1,3 +1,5 @@
+include .env
+
 LOCAL_BIN:=$(CURDIR)/bin
 
 install-lint:
@@ -28,16 +30,30 @@ generate-user-api:
 	--go-grpc_out=pkg/user_v1 --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
 	api/user_v1/user.proto
+
 go-build:
 	go build -o ./build/auth_server cmd/server/main.go
+
 docker-build:
 	docker buildx build --no-cache --platform linux/amd64 -t cr.selcloud.ru/alexzabolotskikh/auth_server .
+
 up-local:
 	docker-compose --project-directory ./ -f config/local/docker-compose.yml up -d
+
 up-prod:
 	docker-compose --project-directory ./ -f config/prod/docker-compose.yml up -d
+
 run-app-local: up-local
 	go run cmd/server/main.go --config-path=config/local/.env
+
+local-migration-status:
+	$(LOCAL_BIN)/goose -dir internal/${MIGRATION_DIR} postgres ${PG_DSN} status -v
+
+local-migration-up:
+	$(LOCAL_BIN)/goose -dir internal/${MIGRATION_DIR} postgres ${PG_DSN} up -v
+
+local-migration-down:
+	$(LOCAL_BIN)/goose -dir internal/${MIGRATION_DIR} postgres ${PG_DSN} down -v
 
 #run-app-prod: up-prod
 #	go run cmd/server/main.go --config-path=config/prod/.env
