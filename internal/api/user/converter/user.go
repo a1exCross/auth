@@ -29,3 +29,19 @@ func UserInfoToProto(info model.UserInfo) *userPb.UserInfo {
 		Email: info.Email,
 	}
 }
+
+func ProtoToUserInfo(info *userPb.UserInfo) model.UserInfo {
+	return model.UserInfo{
+		Name:  info.Name,
+		Role:  model.UserRole(info.Role),
+		Email: info.Email,
+	}
+}
+
+func ProtoToUserInfoUpdate(info *userPb.UpdateInfo) model.UserInfo {
+	return model.UserInfo{
+		Name:  info.Name.Value,
+		Role:  model.UserRole(info.Role),
+		Email: info.Email.Value,
+	}
+}

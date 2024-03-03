@@ -1,6 +1,7 @@
 package userapi
 
 import (
+	"github.com/a1exCross/auth/internal/api/user/converter"
 	"github.com/a1exCross/auth/internal/model"
 	pbUser "github.com/a1exCross/auth/pkg/user_v1"
 
@@ -15,11 +16,7 @@ func (i Implementation) Create(ctx context.Context, req *pbUser.CreateRequest) (
 	}
 
 	res, err := i.userService.Create(ctx, &model.UserCreate{
-		Info: model.UserInfo{
-			Name:  req.Info.Name,
-			Role:  model.UserRole(req.Info.Role),
-			Email: req.Info.Email,
-		},
+		Info:     converter.ProtoToUserInfo(req.GetInfo()),
 		Password: req.Pass.Password,
 	})
 	if err != nil {
