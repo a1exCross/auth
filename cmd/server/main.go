@@ -46,7 +46,7 @@ func (s service) Get(ctx context.Context, req *pbUser.GetRequest) (*pbUser.GetRe
 	selectBuilder := sq.Select(id, name, email, role, createdAt, updatedAt).
 		PlaceholderFormat(sq.Dollar).
 		From(table).
-		Where(fmt.Sprintf("%s = ?", id), req.GetId())
+		Where(sq.Eq{id: req.GetId()})
 
 	query, args, err := selectBuilder.ToSql()
 	if err != nil {
@@ -127,7 +127,7 @@ func (s service) Update(ctx context.Context, req *pbUser.UpdateRequest) (*empty.
 		Set(name, req.GetName().Value).
 		Set(email, req.GetEmail().Value).
 		Set(role, req.GetRole()).
-		Where(fmt.Sprintf("%s = ?", id), req.GetId())
+		Where(sq.Eq{id: req.GetId()})
 
 	query, args, err := updateBuilder.ToSql()
 	if err != nil {
@@ -144,7 +144,7 @@ func (s service) Update(ctx context.Context, req *pbUser.UpdateRequest) (*empty.
 
 func (s service) Delete(ctx context.Context, req *pbUser.DeleteRequest) (*empty.Empty, error) {
 	deleteBuilder := sq.Delete(table).
-		Where(fmt.Sprintf("%s = ?", id), req.GetId()).
+		Where(sq.Eq{id: req.Id}).
 		PlaceholderFormat(sq.Dollar)
 
 	query, args, err := deleteBuilder.ToSql()
