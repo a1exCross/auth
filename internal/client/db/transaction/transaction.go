@@ -1,30 +1,32 @@
 package transaction
 
 import (
-	"context"
 	"github.com/a1exCross/auth/internal/client/db"
 	"github.com/a1exCross/auth/internal/client/db/pg"
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
+
+	"context"
 )
 
 type manager struct {
 	db db.Transactor
 }
 
+// NewTransactionManager - создает новый менеджер транзакций
 func NewTransactionManager(db db.Transactor) db.TxManager {
 	return &manager{
 		db: db,
 	}
 }
 
-func (m *manager) transaction(ctx context.Context, opts pgx.TxOptions, fn db.Handler) error {
+func (m *manager) transaction(ctx context.Context, opts pgx.TxOptions, fn db.Handler) (err error) {
 	tx, ok := ctx.Value(pg.TxKey).(pgx.Tx)
 	if ok {
 		return fn(ctx)
 	}
 
-	tx, err := m.db.BeginTx(ctx, opts)
+	tx, err = m.db.BeginTx(ctx, opts)
 	if err != nil {
 		return errors.Wrap(err, "can`t begin transaction")
 	}

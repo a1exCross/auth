@@ -1,14 +1,15 @@
-package userService
+package userservice
 
 import (
-	"context"
-	"fmt"
 	"github.com/a1exCross/auth/internal/model"
 	"golang.org/x/crypto/bcrypt"
+
+	"context"
+	"fmt"
 	"strconv"
 )
 
-func (s serv) Create(ctx context.Context, userParams *model.UserCreate) (int64, error) {
+func (s *serv) Create(ctx context.Context, userParams *model.UserCreate) (int64, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userParams.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, fmt.Errorf("failed hash password: %v", err)

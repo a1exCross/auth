@@ -1,14 +1,15 @@
 package app
 
 import (
-	"context"
-	"flag"
 	"github.com/a1exCross/auth/internal/closer"
 	"github.com/a1exCross/auth/internal/config"
 	userPb "github.com/a1exCross/auth/pkg/user_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+
+	"context"
+	"flag"
 	"log"
 	"net"
 )
@@ -19,11 +20,13 @@ func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
 }
 
+// App является структурой точки входа в приложение
 type App struct {
 	serviceProvider *serviceProvider
 	grpcServer      *grpc.Server
 }
 
+// NewApp - точка входа в приложение
 func NewApp(ctx context.Context) (*App, error) {
 	a := &App{}
 
@@ -35,6 +38,7 @@ func NewApp(ctx context.Context) (*App, error) {
 	return a, nil
 }
 
+// Run - Запуск обработчиков событиый
 func (a *App) Run() error {
 	defer func() {
 		closer.CloseAll()

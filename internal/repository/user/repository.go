@@ -1,12 +1,13 @@
-package userRepository
+package userrepository
 
 import (
-	"context"
-	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/a1exCross/auth/internal/client/db"
 	"github.com/a1exCross/auth/internal/model"
 	"github.com/a1exCross/auth/internal/repository"
+
+	"context"
+	"fmt"
 )
 
 const (
@@ -21,6 +22,7 @@ const (
 	updatedAtColumn = "updated_at"
 )
 
+// NewRepository - возвращает методы для работы с репозиторием пользователей
 func NewRepository(db db.Client) repository.UserRepository {
 	return repo{
 		db: db,

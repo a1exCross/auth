@@ -1,8 +1,9 @@
 package main
 
 import (
-	"context"
 	"github.com/a1exCross/auth/internal/app"
+
+	"context"
 	"log"
 )
 

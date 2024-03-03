@@ -1,12 +1,13 @@
-package userService
+package userservice
 
 import (
-	"context"
 	"github.com/a1exCross/auth/internal/model"
+
+	"context"
 	"strconv"
 )
 
-func (s serv) Get(ctx context.Context, id int64) (*model.User, error) {
+func (s *serv) Get(ctx context.Context, id int64) (*model.User, error) {
 	var user *model.User
 
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {

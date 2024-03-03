@@ -1,12 +1,13 @@
-package userService
+package userservice
 
 import (
-	"context"
 	"github.com/a1exCross/auth/internal/model"
+
+	"context"
 	"strconv"
 )
 
-func (s serv) Delete(ctx context.Context, id int64) error {
+func (s *serv) Delete(ctx context.Context, id int64) error {
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
 

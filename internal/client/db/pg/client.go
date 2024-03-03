@@ -1,25 +1,25 @@
 package pg
 
 import (
-	"context"
-	"fmt"
 	"github.com/a1exCross/auth/internal/client/db"
 	"github.com/jackc/pgx/v4/pgxpool"
+
+	"context"
+	"fmt"
 )
 
 type pgClient struct {
 	masterDBC db.DB
 }
 
+// New - создает новый клиент БД
 func New(ctx context.Context, dsn string) (db.Client, error) {
 	dbc, err := pgxpool.Connect(ctx, dsn)
 	if err != nil {
 		return nil, fmt.Errorf("falied to connect to database: %v", err)
 	}
 	return &pgClient{
-		masterDBC: &pg{
-			dbc: dbc,
-		},
+		masterDBC: NewDB(dbc),
 	}, nil
 }
 

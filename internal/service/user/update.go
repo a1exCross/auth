@@ -1,12 +1,13 @@
-package userService
+package userservice
 
 import (
-	"context"
 	"github.com/a1exCross/auth/internal/model"
+
+	"context"
 	"strconv"
 )
 
-func (s serv) Update(ctx context.Context, user *model.UserUpdate) error {
+func (s *serv) Update(ctx context.Context, user *model.UserUpdate) error {
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
 

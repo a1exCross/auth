@@ -1,12 +1,14 @@
-package userAPI
+package userapi
 
 import (
-	"context"
-	"fmt"
 	"github.com/a1exCross/auth/internal/model"
 	pbUser "github.com/a1exCross/auth/pkg/user_v1"
+
+	"context"
+	"fmt"
 )
 
+// Create принимает и обрабатывает запрос на создание пользователя
 func (i Implementation) Create(ctx context.Context, req *pbUser.CreateRequest) (*pbUser.CreateResponse, error) {
 	if req.Pass.Password != req.Pass.PasswordConfirm {
 		return nil, fmt.Errorf("passwords mismatch")

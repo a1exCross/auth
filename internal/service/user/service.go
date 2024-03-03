@@ -1,4 +1,4 @@
-package userService
+package userservice
 
 import (
 	"github.com/a1exCross/auth/internal/client/db"
@@ -12,8 +12,9 @@ type serv struct {
 	txManager db.TxManager
 }
 
+// NewService - создает сервисный слой для работы с пользователями
 func NewService(userRepo repository.UserRepository, tx db.TxManager, logRepo repository.LogsRepository) service.UserService {
-	return serv{
+	return &serv{
 		userRepo:  userRepo,
 		txManager: tx,
 		logsRepo:  logRepo,

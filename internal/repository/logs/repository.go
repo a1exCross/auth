@@ -1,12 +1,13 @@
-package logsRepository
+package logsrepository
 
 import (
-	"context"
-	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/a1exCross/auth/internal/client/db"
 	"github.com/a1exCross/auth/internal/model"
 	"github.com/a1exCross/auth/internal/repository"
+
+	"context"
+	"fmt"
 )
 
 const (
@@ -18,6 +19,7 @@ const (
 	timestampColumn = "timestamp"
 )
 
+// NewRepository - возвращает методы для работы с репозиторием логов
 func NewRepository(db db.Client) repository.LogsRepository {
 	return repo{
 		db: db,

@@ -1,25 +1,28 @@
 package pg
 
 import (
-	"context"
-	"fmt"
 	"github.com/a1exCross/auth/internal/client/db"
 	"github.com/a1exCross/auth/internal/client/db/prettier"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+
+	"context"
+	"fmt"
 	"log"
 )
 
 type key string
 
+// TxKey - ключ хранения транзакции в контексте
 const TxKey key = "tx"
 
 type pg struct {
 	dbc *pgxpool.Pool
 }
 
+// NewDB - создает имплементацию подключения к БД
 func NewDB(dbc *pgxpool.Pool) db.DB {
 	return &pg{
 		dbc: dbc,
@@ -91,6 +94,7 @@ func (p *pg) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, erro
 	return p.dbc.BeginTx(ctx, txOptions)
 }
 
+// MakeContext - кладет в context менеджер транзакций
 func MakeContext(ctx context.Context, tx pgx.Tx) context.Context {
 	return context.WithValue(ctx, TxKey, tx)
 }

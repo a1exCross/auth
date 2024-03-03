@@ -1,13 +1,15 @@
-package userAPI
+package userapi
 
 import (
-	"context"
-	"fmt"
 	"github.com/a1exCross/auth/internal/model"
 	pbUser "github.com/a1exCross/auth/pkg/user_v1"
 	"github.com/golang/protobuf/ptypes/empty"
+
+	"context"
+	"fmt"
 )
 
+// Update принимает и обрабатывает запрос на обновление пользователя
 func (i Implementation) Update(ctx context.Context, req *pbUser.UpdateRequest) (*empty.Empty, error) {
 	err := i.userService.Update(ctx, &model.UserUpdate{
 		Info: model.UserInfo{

@@ -6,6 +6,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// UserToProto - конвертирует модель пользователя в proto
 func UserToProto(user *model.User) *userPb.User {
 	var updatedAt *timestamppb.Timestamp
 	if user.UpdatedAt.Valid {
@@ -20,6 +21,7 @@ func UserToProto(user *model.User) *userPb.User {
 	}
 }
 
+// UserInfoToProto - конвертирует информацию о пользователе в proto
 func UserInfoToProto(info model.UserInfo) *userPb.UserInfo {
 	return &userPb.UserInfo{
 		Name:  info.Name,
