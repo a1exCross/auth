@@ -1,0 +1,30 @@
+version: "3"
+
+volumes:
+  postgres_volume_prod:
+
+services:
+  pg-prod:
+      image: "postgres:14-alpine3.17"
+      env_file:
+        - "config/prod/.env"
+      ports:
+        - "54322:5432"
+      volumes:
+        - postgres_volume_prod:/val/lib/postgresql/data
+
+  migrator-prod:
+    build:
+      context: .
+      dockerfile: "config/prod/migration.Dockerfile"
+    restart: on-failure
+    environment:
+      DB_HOST: pg-prod
+
+  app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - "50052:50052"
+    restart: on-failure
