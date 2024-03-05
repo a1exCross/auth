@@ -1,10 +1,10 @@
 package userservice
 
 import (
-	"github.com/a1exCross/auth/internal/model"
-
 	"context"
 	"strconv"
+
+	"github.com/a1exCross/auth/internal/model"
 )
 
 func (s *serv) Get(ctx context.Context, id int64) (*model.User, error) {

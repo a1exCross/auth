@@ -50,10 +50,12 @@ func main() {
 	}
 
 	_, err = cl.Update(ctx, &userDesc.UpdateRequest{
-		Id:    user.User.Id,
-		Name:  wrapperspb.String("new name"),
-		Email: wrapperspb.String("new email"),
-		Role:  userDesc.UserRole_USER,
+		Id: user.User.Id,
+		Info: &userDesc.UpdateInfo{
+			Name:  wrapperspb.String("new name"),
+			Email: wrapperspb.String("new email"),
+			Role:  userDesc.UserRole_USER,
+		},
 	})
 	if err != nil {
 		log.Fatalf("failed to update user: %v", err)

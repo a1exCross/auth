@@ -1,10 +1,10 @@
 package userservice
 
 import (
-	"github.com/a1exCross/auth/internal/model"
-
 	"context"
 	"strconv"
+
+	"github.com/a1exCross/auth/internal/model"
 )
 
 func (s *serv) Delete(ctx context.Context, id int64) error {

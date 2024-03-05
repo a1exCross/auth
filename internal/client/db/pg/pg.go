@@ -1,16 +1,16 @@
 package pg
 
 import (
+	"context"
+	"fmt"
+	"log"
+
 	"github.com/a1exCross/auth/internal/client/db"
 	"github.com/a1exCross/auth/internal/client/db/prettier"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-
-	"context"
-	"fmt"
-	"log"
 )
 
 type key string

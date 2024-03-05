@@ -1,6 +1,9 @@
 package app
 
 import (
+	"context"
+	"log"
+
 	userAPI "github.com/a1exCross/auth/internal/api/user"
 	"github.com/a1exCross/auth/internal/client/db"
 	"github.com/a1exCross/auth/internal/client/db/pg"
@@ -12,9 +15,6 @@ import (
 	userRepository "github.com/a1exCross/auth/internal/repository/user"
 	"github.com/a1exCross/auth/internal/service"
 	userService "github.com/a1exCross/auth/internal/service/user"
-
-	"context"
-	"log"
 )
 
 type serviceProvider struct {

@@ -6,5 +6,5 @@ import "time"
 type Log struct {
 	Action    string    `db:"action"`
 	Content   string    `db:"content"`
-	Timestamp time.Time `db:"timestamp"`
+	CreatedAt time.Time `db:"created_at"`
 }

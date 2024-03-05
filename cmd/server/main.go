@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/a1exCross/auth/internal/app"
-
 	"context"
 	"log"
+
+	"github.com/a1exCross/auth/internal/app"
 )
 
 func main() {

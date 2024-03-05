@@ -1,12 +1,12 @@
 package userservice
 
 import (
-	"github.com/a1exCross/auth/internal/model"
-	"golang.org/x/crypto/bcrypt"
-
 	"context"
 	"fmt"
 	"strconv"
+
+	"github.com/a1exCross/auth/internal/model"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *serv) Create(ctx context.Context, userParams *model.UserCreate) (int64, error) {

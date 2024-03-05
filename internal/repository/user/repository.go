@@ -1,13 +1,13 @@
 package userrepository
 
 import (
+	"context"
+	"fmt"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/a1exCross/auth/internal/client/db"
 	"github.com/a1exCross/auth/internal/model"
 	"github.com/a1exCross/auth/internal/repository"
-
-	"context"
-	"fmt"
 )
 
 const (
@@ -64,7 +64,7 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	selectBuilder := sq.Select(nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		PlaceholderFormat(sq.Dollar).
 		From(tableName).
-		Where(fmt.Sprintf("%s = ?", idColumn), id)
+		Where(sq.Eq{idColumn: id})
 
 	query, args, err := selectBuilder.ToSql()
 	if err != nil {
@@ -90,7 +90,7 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 
 func (r repo) Delete(ctx context.Context, id int64) error {
 	deleteBuilder := sq.Delete(tableName).
-		Where(fmt.Sprintf("%s = ?", idColumn), id).
+		Where(sq.Eq{idColumn: id}).
 		PlaceholderFormat(sq.Dollar)
 
 	query, args, err := deleteBuilder.ToSql()
@@ -117,7 +117,7 @@ func (r repo) Update(ctx context.Context, params *model.UserUpdate) error {
 		Set(nameColumn, params.Info.Name).
 		Set(emailColumn, params.Info.Email).
 		Set(roleColumn, params.Info.Role).
-		Where(fmt.Sprintf("%s = ?", idColumn), params.ID)
+		Where(sq.Eq{idColumn: params.ID})
 
 	query, args, err := updateBuilder.ToSql()
 	if err != nil {

@@ -1,9 +1,9 @@
 package service
 
 import (
-	"github.com/a1exCross/auth/internal/model"
-
 	"context"
+
+	"github.com/a1exCross/auth/internal/model"
 )
 
 // UserService - интерфейс, описывающий сервисный слой для работы с пользователями

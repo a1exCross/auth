@@ -26,40 +26,43 @@ jobs:
         with:
           version: v1.53
           args: --timeout=30m --config=./.golangci.pipeline.yaml --issues-exit-code=0
-  build-and-push:
-    runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout master
-        uses: actions/checkout@v3
+# - ОТКЛЮЧИЛ SELECTEL
 
-      - name: Set up Docker buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to Docker registry
-        run: docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} $REGISTRY
-
-      - name: Create env file
-        run: |
-          cd config/prod/
-          touch .env
-          echo POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-          echo POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          echo MIGRATION_DIR=${{ secrets.MIGRATION_DIR }}
-          
-          echo PG_DSN=${{ secrets.PG_DSN }}
-          echo MIGRATION_DSN=${{ secrets.MIGRATION_DSN }}
-        
-          echo GRPC_HOST=${{ secrets.GRPC_HOST }}
-          echo GRPC_PORT=${{ secrets.GRPC_PORT }}
-          cat .env
-
-      - name: Build and push image
-        run: |
-          TAG_NAME=$(echo $GITHUB_SHA | head -c7)
-          docker buildx create --use
-          docker buildx build --no-cache --push --tag $REGISTRY/$IMAGE_NAME:$TAG_NAME .
+#  build-and-push:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout master
+#        uses: actions/checkout@v3
+#
+#      - name: Set up Docker buildx
+#        uses: docker/setup-buildx-action@v2
+#
+#      - name: Login to Docker registry
+#        run: docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} $REGISTRY
+#
+#      - name: Create env file
+#        run: |
+#          cd config/prod/
+#          touch .env
+#          echo POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+#          echo POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+#          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+#          echo MIGRATION_DIR=${{ secrets.MIGRATION_DIR }}
+#
+#          echo PG_DSN=${{ secrets.PG_DSN }}
+#          echo MIGRATION_DSN=${{ secrets.MIGRATION_DSN }}
+#
+#          echo GRPC_HOST=${{ secrets.GRPC_HOST }}
+#          echo GRPC_PORT=${{ secrets.GRPC_PORT }}
+#          cat .env
+#
+#      - name: Build and push image
+#        run: |
+#          TAG_NAME=$(echo $GITHUB_SHA | head -c7)
+#          docker buildx create --use
+#          docker buildx build --no-cache --push --tag $REGISTRY/$IMAGE_NAME:$TAG_NAME .
 
 #  deploy-image:
 #    runs-on: ubuntu-latest

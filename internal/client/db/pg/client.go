@@ -1,11 +1,11 @@
 package pg
 
 import (
-	"github.com/a1exCross/auth/internal/client/db"
-	"github.com/jackc/pgx/v4/pgxpool"
-
 	"context"
 	"fmt"
+
+	"github.com/a1exCross/auth/internal/client/db"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type pgClient struct {

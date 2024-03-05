@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"github.com/a1exCross/auth/internal/model"
-
 	"context"
+
+	"github.com/a1exCross/auth/internal/model"
 )
 
 // UserRepository - описывает методы репозитория пользователей

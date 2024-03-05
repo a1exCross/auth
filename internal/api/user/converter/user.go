@@ -30,6 +30,7 @@ func UserInfoToProto(info model.UserInfo) *userPb.UserInfo {
 	}
 }
 
+// ProtoToUserInfo - конвертирует proto в модель информации о пользователе
 func ProtoToUserInfo(info *userPb.UserInfo) model.UserInfo {
 	return model.UserInfo{
 		Name:  info.Name,
@@ -38,6 +39,7 @@ func ProtoToUserInfo(info *userPb.UserInfo) model.UserInfo {
 	}
 }
 
+// ProtoToUserInfoUpdate - конвертирует proto в модель информации о пользователе
 func ProtoToUserInfoUpdate(info *userPb.UpdateInfo) model.UserInfo {
 	return model.UserInfo{
 		Name:  info.Name.Value,

@@ -1,13 +1,13 @@
 package logsrepository
 
 import (
+	"context"
+	"fmt"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/a1exCross/auth/internal/client/db"
 	"github.com/a1exCross/auth/internal/model"
 	"github.com/a1exCross/auth/internal/repository"
-
-	"context"
-	"fmt"
 )
 
 const (
@@ -16,7 +16,7 @@ const (
 	idColumn        = "id"
 	actionColumn    = "action"
 	contentColumn   = "content"
-	timestampColumn = "timestamp"
+	createdAtColumn = "created_at"
 )
 
 // NewRepository - возвращает методы для работы с репозиторием логов
@@ -58,10 +58,10 @@ func (r repo) Create(ctx context.Context, params model.Log) (int64, error) {
 }
 
 func (r repo) Get(ctx context.Context, id int64) (model.Log, error) {
-	selectBuilder := sq.Select(actionColumn, contentColumn, timestampColumn).
+	selectBuilder := sq.Select(actionColumn, contentColumn, createdAtColumn).
 		PlaceholderFormat(sq.Dollar).
 		From(tableName).
-		Where(fmt.Sprintf("%s = ?", idColumn), id)
+		Where(sq.Eq{idColumn: id})
 
 	query, args, err := selectBuilder.ToSql()
 	if err != nil {
