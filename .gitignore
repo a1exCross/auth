@@ -2,3 +2,4 @@
 /bin/
 /config/local/
 /config/prod/.env
+.env
