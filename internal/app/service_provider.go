@@ -5,16 +5,16 @@ import (
 	"log"
 
 	userAPI "github.com/a1exCross/auth/internal/api/user"
-	"github.com/a1exCross/auth/internal/client/db"
-	"github.com/a1exCross/auth/internal/client/db/pg"
-	"github.com/a1exCross/auth/internal/client/db/transaction"
-	"github.com/a1exCross/auth/internal/closer"
 	"github.com/a1exCross/auth/internal/config"
 	"github.com/a1exCross/auth/internal/repository"
 	logsRepository "github.com/a1exCross/auth/internal/repository/logs"
 	userRepository "github.com/a1exCross/auth/internal/repository/user"
 	"github.com/a1exCross/auth/internal/service"
 	userService "github.com/a1exCross/auth/internal/service/user"
+	"github.com/a1exCross/common/pkg/client/db"
+	"github.com/a1exCross/common/pkg/client/db/pg"
+	"github.com/a1exCross/common/pkg/client/db/transaction"
+	"github.com/a1exCross/common/pkg/closer"
 )
 
 type serviceProvider struct {

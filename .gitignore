@@ -3,3 +3,4 @@
 /config/local/
 /config/prod/.env
 .env
+coverage.out

@@ -14,6 +14,8 @@ install-deps:
 	GOBIN=$(LOCAL_BIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
 	GOBIN=$(LOCAL_BIN) go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 	GOBIN=$(LOCAL_BIN) go install github.com/pressly/goose/v3/cmd/goose@v3.14.0
+	GOBIN=$(LOCAL_BIN) go install github.com/gojuno/minimock/v3/cmd/minimock@latest
+
 
 get-deps:
 	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
@@ -55,5 +57,14 @@ local-migration-up:
 local-migration-down:
 	$(LOCAL_BIN)/goose -dir internal/${MIGRATION_DIR} postgres ${PG_DSN} down -v
 
-#run-app-prod: up-prod
-#	go run cmd/server/main.go --config-path=config/prod/.env
+test:
+	go clean -testcache
+	go test ./... -coverpkg=./internal...
+
+test-cover:
+	go clean -testcache
+	go test ./... -coverprofile=coverage.tmp.out -coverpkg=./internal...
+	grep -v 'mocks\|config' coverage.tmp.out  > coverage.out
+	rm coverage.tmp.out
+	go tool cover -html=coverage.out
+	go tool cover -func=./coverage.out | grep "total"

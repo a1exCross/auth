@@ -6,9 +6,9 @@ import (
 	"log"
 	"net"
 
-	"github.com/a1exCross/auth/internal/closer"
 	"github.com/a1exCross/auth/internal/config"
 	userPb "github.com/a1exCross/auth/pkg/user_v1"
+	"github.com/a1exCross/common/pkg/closer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
