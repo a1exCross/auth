@@ -7,6 +7,7 @@ import (
 	"github.com/a1exCross/auth/internal/api/user/converter"
 	"github.com/a1exCross/auth/internal/model"
 	pbUser "github.com/a1exCross/auth/pkg/user_v1"
+
 	"github.com/golang/protobuf/ptypes/empty"
 )
 

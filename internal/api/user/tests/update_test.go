@@ -5,17 +5,15 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/protobuf/ptypes/empty"
-
-	"github.com/golang/protobuf/ptypes/wrappers"
-
-	"github.com/a1exCross/auth/internal/service"
-
 	userapi "github.com/a1exCross/auth/internal/api/user"
 	"github.com/a1exCross/auth/internal/model"
+	"github.com/a1exCross/auth/internal/service"
 	"github.com/a1exCross/auth/internal/service/mocks"
 	"github.com/a1exCross/auth/pkg/user_v1"
+
 	"github.com/gojuno/minimock/v3"
+	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/stretchr/testify/require"
 )
 

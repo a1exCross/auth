@@ -11,6 +11,7 @@ import (
 	userRepository "github.com/a1exCross/auth/internal/repository/user"
 	"github.com/a1exCross/auth/internal/service"
 	userService "github.com/a1exCross/auth/internal/service/user"
+
 	"github.com/a1exCross/common/pkg/client/db"
 	"github.com/a1exCross/common/pkg/client/db/pg"
 	"github.com/a1exCross/common/pkg/client/db/transaction"

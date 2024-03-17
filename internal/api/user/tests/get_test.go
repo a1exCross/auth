@@ -7,16 +7,15 @@ import (
 	"testing"
 	"time"
 
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/a1exCross/auth/internal/service"
-
 	userapi "github.com/a1exCross/auth/internal/api/user"
 	"github.com/a1exCross/auth/internal/model"
+	"github.com/a1exCross/auth/internal/service"
 	"github.com/a1exCross/auth/internal/service/mocks"
 	"github.com/a1exCross/auth/pkg/user_v1"
+
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestGet(t *testing.T) {

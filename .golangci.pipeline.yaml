@@ -27,6 +27,15 @@ linters-settings:
   goconst:
     min-len:         2
     min-occurrences: 2
+  gci:
+    sections:
+      [
+        "standard",
+        "prefix(github.com/a1exCross/auth)",
+        "prefix(github.com/a1exCross)",
+        "default",
+      ]
+    custom-order: true
  
 linters:
   disable-all: true
@@ -41,6 +50,7 @@ linters:
     - revive
     - typecheck
     - unused
+    - gci
 
 issues:
   exclude-use-default: false

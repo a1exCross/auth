@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	pbUser "github.com/a1exCross/auth/pkg/user_v1"
+
 	"github.com/golang/protobuf/ptypes/empty"
 )
 

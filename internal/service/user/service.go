@@ -3,6 +3,7 @@ package userservice
 import (
 	"github.com/a1exCross/auth/internal/repository"
 	"github.com/a1exCross/auth/internal/service"
+
 	"github.com/a1exCross/common/pkg/client/db"
 )
 
