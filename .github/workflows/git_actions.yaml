@@ -26,6 +26,13 @@ jobs:
         with:
           version: v1.53
           args: --timeout=30m --config=./.golangci.pipeline.yaml --issues-exit-code=0
+      - name: Tests run
+        run: |
+          go test ./... -coverprofile=coverage.tmp.out -coverpkg=./internal...
+          grep -v 'mocks\|config' coverage.tmp.out  > coverage.out
+          rm coverage.tmp.out
+          go tool cover -func=./coverage.out | grep "total";
+          grep -sqFx "/coverage.out" .gitignore || echo "/coverage.out" >> .gitignore
 
 # - ОТКЛЮЧИЛ SELECTEL
 

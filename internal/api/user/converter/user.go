@@ -3,6 +3,7 @@ package converter
 import (
 	"github.com/a1exCross/auth/internal/model"
 	userPb "github.com/a1exCross/auth/pkg/user_v1"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

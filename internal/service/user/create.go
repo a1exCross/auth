@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/a1exCross/auth/internal/model"
+
 	"golang.org/x/crypto/bcrypt"
 )
 

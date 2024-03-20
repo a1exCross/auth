@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	sq "github.com/Masterminds/squirrel"
-	"github.com/a1exCross/auth/internal/client/db"
 	"github.com/a1exCross/auth/internal/model"
 	"github.com/a1exCross/auth/internal/repository"
+
+	"github.com/a1exCross/common/pkg/client/db"
+
+	sq "github.com/Masterminds/squirrel"
 )
 
 const (
