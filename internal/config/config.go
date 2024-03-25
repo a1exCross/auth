@@ -12,6 +12,16 @@ func Load(path string) error {
 	return nil
 }
 
+// SwaggerConfig - конфиг swagger
+type SwaggerConfig interface {
+	Address() string
+}
+
+// HTTPConfig - конфиг http
+type HTTPConfig interface {
+	Address() string
+}
+
 // GRPCConfig - конфиг gRPC
 type GRPCConfig interface {
 	Address() string

@@ -5,68 +5,129 @@ package user_v1;
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/a1exCross/auth/pkg/user_v1;user_v1";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+    info: {
+        title: "User API"
+        version: "1.0.0"
+        contact: {
+            name: "Alexandr Zabolotskikh"
+            email: "some-mail@mail.ru"
+        };
+    };
+
+    host: "localhost:8080"
+    schemes: HTTP,
+    schemes: HTTPS,
+    consumes: "application/json",
+    produces: "application/json",
+};
 
 service UserV1 {
-    rpc Create(CreateRequest) returns (CreateResponse);
-    rpc Get(GetRequest) returns (GetResponse);
-    rpc Update(UpdateRequest) returns (google.protobuf.Empty);
-    rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+    // Создает нового пользователя в системе
+    rpc Create(CreateRequest) returns (CreateResponse) {
+        option (google.api.http) = {
+            post: "/user/v1"
+            body: "*"
+        };
+    }
+
+    // Возвращает пользователя по id
+    rpc Get(GetRequest) returns (GetResponse) {
+        option (google.api.http) = {
+            get: "/user/v1"
+        };
+    }
+
+    // Обновляет пользователя по id
+    rpc Update(UpdateRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            patch: "/user/v1"
+            body: "*"
+        };
+    }
+
+    // Удаляет пользователя по id
+    rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+           delete: "/user/v1"
+        };
+    }
 }
 
 enum UserRole {
+    // Не определён
     UNKNOWN = 0;
+    // Простой пользователь
     USER = 1;
+    // Администратор
     ADMIN = 2;
 }
 
 message UserPassword {
-    string password = 1;
-    string password_confirm = 2;
+    // Пароль пользователя
+    string password = 1 [(validate.rules).string = {min_len: 8, max_len: 50, ignore_empty: false}];
+    // Подтверждение пароля пользователя
+    string password_confirm = 2 [(validate.rules).string = {min_len: 8, max_len: 50, ignore_empty: false}];
 }
 
 message UserInfo {
-    string name = 1;
-    string email = 2;
-    UserRole role = 3;
+    // Имя пользователя
+    string name = 1 [(validate.rules).string = {ignore_empty: false}];
+    // Почта пользователя
+    string email = 2 [(validate.rules).string = {ignore_empty: false}];
+    UserRole role = 3 [(validate.rules).enum = {defined_only: true}];
 }
 
 message User {
+    // Идентификатор пользователя
     int64 id = 1;
     UserInfo info = 2;
+    // Дата создания пользователя
     google.protobuf.Timestamp created_at = 3;
+    // Дата обновления пользователя
     google.protobuf.Timestamp updated_at = 4;
 }
 
 message CreateRequest {
-    UserInfo info = 1;
-    UserPassword pass = 2;
+    UserInfo info = 1 [(validate.rules).message = {required: true}];
+    UserPassword pass = 2 [(validate.rules).message = {required: true}];
 }
 
 message CreateResponse {
+    // Идентификатор созданного пользователя
     int64 id = 1;
 }
 
 message GetRequest {
-    int64 id = 1;
+    // Идентификатор получаемого пользователя
+    int64 id = 1 [(validate.rules).int64.gt = 0];
 }
 
 message GetResponse {
+    // Полученный пользователь
     User user = 1;
 }
 
 message UpdateRequest {
-    int64 id = 1;
-    UpdateInfo info = 2;
+    // Идентификатор обновляемого пользователя
+    int64 id = 1 [(validate.rules).int64.gt = 0];
+    UpdateInfo info = 2 [(validate.rules).message = {required: true}];
 }
 
 message UpdateInfo {
+    // Новое имя пользователя
     google.protobuf.StringValue name = 1;
+    // Новая почта пользователя
     google.protobuf.StringValue email = 2;
-    UserRole role = 3;
+    UserRole role = 3 [(validate.rules).enum = {defined_only: true}];
 }
  
 message DeleteRequest {
-    int64 id = 1;
+    // Идентификатор удаляемого пользователя
+    int64 id = 1 [(validate.rules).int64.gt = 0];
 }
