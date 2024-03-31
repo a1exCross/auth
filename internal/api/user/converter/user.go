@@ -34,9 +34,10 @@ func UserInfoToProto(info model.UserInfo) *userPb.UserInfo {
 // ProtoToUserInfo - конвертирует proto в модель информации о пользователе
 func ProtoToUserInfo(info *userPb.UserInfo) model.UserInfo {
 	return model.UserInfo{
-		Name:  info.Name,
-		Role:  model.UserRole(info.Role),
-		Email: info.Email,
+		Username: info.Username,
+		Name:     info.Name,
+		Role:     model.UserRole(info.Role),
+		Email:    info.Email,
 	}
 }
 

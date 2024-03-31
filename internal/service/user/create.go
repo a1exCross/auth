@@ -6,17 +6,25 @@ import (
 	"strconv"
 
 	"github.com/a1exCross/auth/internal/model"
-
-	"golang.org/x/crypto/bcrypt"
+	"github.com/a1exCross/auth/internal/utils"
 )
 
 func (s *serv) Create(ctx context.Context, userParams *model.UserCreate) (int64, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userParams.Password), bcrypt.DefaultCost)
+	user, err := s.userRepo.GetByUsername(ctx, userParams.Info.Username)
+	if err != nil && err.Error() != utils.UserNotFound {
+		return 0, err
+	}
+
+	if user != nil {
+		return 0, fmt.Errorf(`user with username "%s" already exist`, userParams.Info.Username)
+	}
+
+	hashedPassword, err := utils.HashPassword(userParams.Password)
 	if err != nil {
 		return 0, fmt.Errorf("failed hash password: %v", err)
 	}
 
-	userParams.Password = string(hashedPassword)
+	userParams.Password = hashedPassword
 
 	var id int64
 

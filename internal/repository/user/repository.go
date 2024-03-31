@@ -2,20 +2,25 @@ package userrepository
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/a1exCross/auth/internal/model"
 	"github.com/a1exCross/auth/internal/repository"
+	"github.com/a1exCross/auth/internal/utils"
 
 	"github.com/a1exCross/common/pkg/client/db"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v4"
+	"github.com/pkg/errors"
 )
 
 const (
 	tableName = "users"
 
 	idColumn        = "id"
+	usernameColumn  = "username"
 	nameColumn      = "name"
 	emailColumn     = "email"
 	roleColumn      = "role"
@@ -38,8 +43,8 @@ type repo struct {
 func (r repo) Create(ctx context.Context, params *model.UserCreate) (int64, error) {
 	insertBuilder := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Columns(nameColumn, emailColumn, roleColumn, passwordColumn).
-		Values(params.Info.Name, params.Info.Email, params.Info.Role, params.Password).
+		Columns(usernameColumn, nameColumn, emailColumn, roleColumn, passwordColumn).
+		Values(params.Info.Username, params.Info.Name, params.Info.Email, params.Info.Role, params.Password).
 		Suffix(fmt.Sprintf("RETURNING %s", idColumn))
 
 	query, args, err := insertBuilder.ToSql()
@@ -62,8 +67,8 @@ func (r repo) Create(ctx context.Context, params *model.UserCreate) (int64, erro
 	return id, nil
 }
 
-func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
-	selectBuilder := sq.Select(nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
+func (r repo) GetByID(ctx context.Context, id int64) (*model.User, error) {
+	selectBuilder := sq.Select(usernameColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn, passwordColumn).
 		PlaceholderFormat(sq.Dollar).
 		From(tableName).
 		Where(sq.Eq{idColumn: id})
@@ -74,7 +79,7 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	}
 
 	q := db.Query{
-		Name:     "user_reposiory.Get",
+		Name:     "user_repository.GetByID",
 		QueryRaw: query,
 	}
 
@@ -84,6 +89,38 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 
 	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, fmt.Errorf("error at query to database: %v", err)
+	}
+
+	return &user, nil
+}
+
+func (r repo) GetByUsername(ctx context.Context, username string) (*model.User, error) {
+	selectBuilder := sq.Select(idColumn, usernameColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn, passwordColumn).
+		PlaceholderFormat(sq.Dollar).
+		From(tableName).
+		Where(sq.Eq{usernameColumn: username})
+
+	query, args, err := selectBuilder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("error at parse sql builder: %v", err)
+	}
+
+	q := db.Query{
+		Name:     "user_repository.GetByUsername",
+		QueryRaw: query,
+	}
+
+	var user model.User
+
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, pgx.ErrNoRows) {
+			return nil, errors.New(utils.UserNotFound)
+		}
 		return nil, fmt.Errorf("error at query to database: %v", err)
 	}
 

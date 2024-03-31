@@ -16,3 +16,15 @@ type UserService interface {
 	Delete(context.Context, int64) error
 	Update(context.Context, *model.UserUpdate) error
 }
+
+// AuthService - сервис авторизации и аутентификации
+type AuthService interface {
+	Login(context.Context, model.LoginDTO) (string, error)
+	GetRefreshToken(context.Context, string) (string, error)
+	GetAccessToken(context.Context, string) (string, error)
+}
+
+// AccessService - сервис проверки доступов
+type AccessService interface {
+	Check(context.Context, ...model.UserRole) error
+}

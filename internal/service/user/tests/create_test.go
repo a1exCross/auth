@@ -12,6 +12,8 @@ import (
 	"github.com/a1exCross/common/pkg/client/db"
 	dbmocks "github.com/a1exCross/common/pkg/client/db/mocks"
 	"github.com/a1exCross/common/pkg/client/db/transaction"
+	"github.com/a1exCross/common/pkg/storage"
+	storagemocks "github.com/a1exCross/common/pkg/storage/mocks"
 
 	"github.com/gojuno/minimock/v3"
 	"github.com/jackc/pgx/v4"
@@ -22,12 +24,15 @@ import (
 func TestCreate(t *testing.T) {
 	type dbClientMock func(mc *minimock.Controller) db.Client
 	type txManagerMock func(mc *minimock.Controller) db.TxManager
+	type storageMock func(mc *minimock.Controller) storage.Redis
 
 	ctx := context.Background()
 	mc := minimock.NewController(t)
 	id := int64(1)
 
-	userDTTO := &model.UserCreate{
+	//timeNow := time.Now()
+
+	userDTO := &model.UserCreate{
 		Info: model.UserInfo{
 			Email: "email",
 			Role:  model.UserRole(1),
@@ -36,12 +41,27 @@ func TestCreate(t *testing.T) {
 		Password: "pass",
 	}
 
+	/*	hash, _ := utils.HashPassword("pass")
+
+		user := &model.User{
+			Info: model.UserInfo{
+				Email: "email",
+				Role:  model.UserRole(1),
+				Name:  "name",
+			},
+			Password:  hash,
+			CreatedAt: timeNow,
+			UpdatedAt: sql.NullTime{},
+			ID:        id,
+		}*/
+
 	tests := []struct {
 		name      string
 		err       error
 		expected  int64
 		dbClient  dbClientMock
 		txManager txManagerMock
+		storageMock
 	}{
 		{
 			name: "successfull test",
@@ -63,6 +83,10 @@ func TestCreate(t *testing.T) {
 
 				dbb.QueryRowContextMock.Return(row)
 
+				dbb.ScanOneContextMock.Set(func(ctx context.Context, dest interface{}, q db.Query, args ...interface{}) (err error) {
+					return pgx.ErrNoRows
+				})
+
 				client.DBMock.Return(dbb)
 
 				return client
@@ -81,6 +105,11 @@ func TestCreate(t *testing.T) {
 				txManager := transaction.NewTransactionManager(transactor)
 
 				return txManager
+			},
+			storageMock: func(mc *minimock.Controller) storage.Redis {
+				mock := storagemocks.NewRedisMock(mc)
+
+				return mock
 			},
 			err:      nil,
 			expected: id,
@@ -104,6 +133,9 @@ func TestCreate(t *testing.T) {
 				})
 
 				dbb.QueryRowContextMock.Return(row)
+				dbb.ScanOneContextMock.Set(func(ctx context.Context, dest interface{}, q db.Query, args ...interface{}) (err error) {
+					return pgx.ErrNoRows
+				})
 
 				client.DBMock.Return(dbb)
 
@@ -125,6 +157,11 @@ func TestCreate(t *testing.T) {
 
 				return txManager
 			},
+			storageMock: func(mc *minimock.Controller) storage.Redis {
+				mock := storagemocks.NewRedisMock(mc)
+
+				return mock
+			},
 			err:      errors.New("failed executing code inside transaction: error at query to database: failed to scan"),
 			expected: 0,
 		},
@@ -136,13 +173,14 @@ func TestCreate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			dbMockClient := test.dbClient(mc)
 			txManager := test.txManager(mc)
+			redisMock := test.storageMock(mc)
 
 			userRepo := userRepository.NewRepository(dbMockClient)
 			logRepo := logsRepository.NewRepository(dbMockClient)
 
-			userServ := userservice.NewService(userRepo, txManager, logRepo)
+			userServ := userservice.NewService(userRepo, txManager, logRepo, redisMock)
 
-			res, err := userServ.Create(ctx, userDTTO)
+			res, err := userServ.Create(ctx, userDTO)
 
 			require.Equal(t, test.expected, res)
 

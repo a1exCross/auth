@@ -272,6 +272,10 @@
           "type": "string",
           "title": "Имя пользователя"
         },
+        "username": {
+          "type": "string",
+          "title": "Имя учетной записи"
+        },
         "email": {
           "type": "string",
           "title": "Почта пользователя"

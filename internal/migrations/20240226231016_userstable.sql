@@ -2,6 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
+    username TEXT NOT NULL,
     name TEXT NOT NULL,
     email TEXT,
     role INTEGER,

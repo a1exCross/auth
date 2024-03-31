@@ -1,6 +1,10 @@
 package config
 
-import "github.com/joho/godotenv"
+import (
+	"time"
+
+	"github.com/joho/godotenv"
+)
 
 // Load - парсит .env
 func Load(path string) error {
@@ -10,6 +14,11 @@ func Load(path string) error {
 	}
 
 	return nil
+}
+
+// RedisConfig - конфиг Redis
+type RedisConfig interface {
+	Address() string
 }
 
 // SwaggerConfig - конфиг swagger
@@ -30,4 +39,12 @@ type GRPCConfig interface {
 // PGConfig - конфиг Postgres
 type PGConfig interface {
 	DSN() string
+}
+
+// JWTConfig - конфиг JWT
+type JWTConfig interface {
+	RefreshSecretKey() []byte
+	RefreshExpirationTime() time.Duration
+	AccessSecretKey() []byte
+	AccessExpirationTime() time.Duration
 }

@@ -12,7 +12,8 @@ import (
 // UserRepository - описывает методы репозитория пользователей
 type UserRepository interface {
 	Create(ctx context.Context, user *model.UserCreate) (int64, error)
-	Get(ctx context.Context, id int64) (*model.User, error)
+	GetByID(ctx context.Context, id int64) (*model.User, error)
+	GetByUsername(ctx context.Context, username string) (*model.User, error)
 	Delete(ctx context.Context, id int64) error
 	Update(ctx context.Context, user *model.UserUpdate) error
 }
