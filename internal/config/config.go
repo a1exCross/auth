@@ -19,6 +19,7 @@ func Load(path string) error {
 // RedisConfig - конфиг Redis
 type RedisConfig interface {
 	Address() string
+	Password() string
 }
 
 // SwaggerConfig - конфиг swagger
