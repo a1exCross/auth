@@ -139,7 +139,7 @@ func (s *serviceProvider) RedisClient() storage.Redis {
 	if s.redisClient == nil {
 		cl, err := cache.NewRedisConnection(&redis.Options{
 			Addr:     s.RedisConfig().Address(),
-			Password: "",
+			Password: s.RedisConfig().Password(),
 			DB:       0,
 		})
 		if err != nil {
