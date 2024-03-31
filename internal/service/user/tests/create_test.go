@@ -30,8 +30,6 @@ func TestCreate(t *testing.T) {
 	mc := minimock.NewController(t)
 	id := int64(1)
 
-	//timeNow := time.Now()
-
 	userDTO := &model.UserCreate{
 		Info: model.UserInfo{
 			Email: "email",
@@ -40,20 +38,6 @@ func TestCreate(t *testing.T) {
 		},
 		Password: "pass",
 	}
-
-	/*	hash, _ := utils.HashPassword("pass")
-
-		user := &model.User{
-			Info: model.UserInfo{
-				Email: "email",
-				Role:  model.UserRole(1),
-				Name:  "name",
-			},
-			Password:  hash,
-			CreatedAt: timeNow,
-			UpdatedAt: sql.NullTime{},
-			ID:        id,
-		}*/
 
 	tests := []struct {
 		name      string
