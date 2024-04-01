@@ -7,9 +7,9 @@ import (
 
 	"github.com/a1exCross/auth/internal/model"
 	"github.com/a1exCross/auth/internal/repository"
-	"github.com/a1exCross/auth/internal/utils"
 
 	"github.com/a1exCross/common/pkg/client/db"
+	"github.com/a1exCross/common/pkg/filter"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
@@ -49,7 +49,7 @@ func (r repo) Create(ctx context.Context, params *model.UserCreate) (int64, erro
 
 	query, args, err := insertBuilder.ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("error at parse sql builder: %v", err)
+		return 0, errors.Errorf("error at parse sql builder: %v", err)
 	}
 
 	var id int64
@@ -61,21 +61,24 @@ func (r repo) Create(ctx context.Context, params *model.UserCreate) (int64, erro
 
 	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("error at query to database: %v", err)
+		return 0, errors.Errorf("error at query to database: %v", err)
 	}
 
 	return id, nil
 }
 
-func (r repo) GetByID(ctx context.Context, id int64) (*model.User, error) {
-	selectBuilder := sq.Select(usernameColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn, passwordColumn).
+func (r repo) Get(ctx context.Context, filters filter.Filter) (*model.User, error) {
+	selectBuilder := sq.Select(idColumn, usernameColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn, passwordColumn).
 		PlaceholderFormat(sq.Dollar).
-		From(tableName).
-		Where(sq.Eq{idColumn: id})
+		From(tableName)
+
+	for _, condition := range filters.Conditions {
+		selectBuilder = selectBuilder.Where(sq.Eq{condition.Key: condition.Value})
+	}
 
 	query, args, err := selectBuilder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("error at parse sql builder: %v", err)
+		return nil, errors.Errorf("error at parse sql builder: %v", err)
 	}
 
 	q := db.Query{
@@ -85,43 +88,12 @@ func (r repo) GetByID(ctx context.Context, id int64) (*model.User, error) {
 
 	var user model.User
 
-	user.ID = id
-
 	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("user not found")
+			return nil, errors.Errorf("user not found")
 		}
-		return nil, fmt.Errorf("error at query to database: %v", err)
-	}
-
-	return &user, nil
-}
-
-func (r repo) GetByUsername(ctx context.Context, username string) (*model.User, error) {
-	selectBuilder := sq.Select(idColumn, usernameColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn, passwordColumn).
-		PlaceholderFormat(sq.Dollar).
-		From(tableName).
-		Where(sq.Eq{usernameColumn: username})
-
-	query, args, err := selectBuilder.ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("error at parse sql builder: %v", err)
-	}
-
-	q := db.Query{
-		Name:     "user_repository.GetByUsername",
-		QueryRaw: query,
-	}
-
-	var user model.User
-
-	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, pgx.ErrNoRows) {
-			return nil, errors.New(utils.UserNotFound)
-		}
-		return nil, fmt.Errorf("error at query to database: %v", err)
+		return nil, errors.Errorf("error at query to database: %v", err)
 	}
 
 	return &user, nil
@@ -134,7 +106,7 @@ func (r repo) Delete(ctx context.Context, id int64) error {
 
 	query, args, err := deleteBuilder.ToSql()
 	if err != nil {
-		return fmt.Errorf("error at parse sql builder: %v", err)
+		return errors.Errorf("error at parse sql builder: %v", err)
 	}
 
 	q := db.Query{
@@ -144,7 +116,7 @@ func (r repo) Delete(ctx context.Context, id int64) error {
 
 	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
-		return fmt.Errorf("error at query to database: %v", err)
+		return errors.Errorf("error at query to database: %v", err)
 	}
 
 	return nil
@@ -160,7 +132,7 @@ func (r repo) Update(ctx context.Context, params *model.UserUpdate) error {
 
 	query, args, err := updateBuilder.ToSql()
 	if err != nil {
-		return fmt.Errorf("error at parse sql builder: %v", err)
+		return errors.Errorf("error at parse sql builder: %v", err)
 	}
 
 	q := db.Query{
@@ -170,7 +142,7 @@ func (r repo) Update(ctx context.Context, params *model.UserUpdate) error {
 
 	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
-		return fmt.Errorf("error at query to database: %v", err)
+		return errors.Errorf("error at query to database: %v", err)
 	}
 
 	return nil

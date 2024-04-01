@@ -12,14 +12,5 @@ service AccessV1 {
 }
 
 message CheckRequest {
-    repeated UserRole role = 1;
-}
-
-enum UserRole {
-  // Не определён
-  UNKNOWN = 0;
-  // Простой пользователь
-  USER = 1;
-  // Администратор
-  ADMIN = 2;
+    string endpoint_address = 1;
 }

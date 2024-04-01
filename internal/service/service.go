@@ -26,5 +26,5 @@ type AuthService interface {
 
 // AccessService - сервис проверки доступов
 type AccessService interface {
-	Check(context.Context, ...model.UserRole) error
+	Check(ctx context.Context, endpoint string) error
 }

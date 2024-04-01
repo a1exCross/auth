@@ -7,11 +7,18 @@ import (
 	"github.com/a1exCross/auth/internal/model"
 	"github.com/a1exCross/auth/internal/utils"
 
+	"github.com/a1exCross/common/pkg/filter"
+
 	"github.com/pkg/errors"
 )
 
 func (s *serv) Login(ctx context.Context, req model.LoginDTO) (string, error) {
-	user, err := s.userRepo.GetByUsername(ctx, req.Username)
+	conditions := filter.MakeFilter(filter.Condition{
+		Key:   model.UserNameFieldCode,
+		Value: req.Username,
+	})
+
+	user, err := s.userRepo.Get(ctx, conditions)
 	if err != nil {
 		return "", err
 	}

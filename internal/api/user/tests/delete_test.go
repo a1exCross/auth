@@ -76,7 +76,11 @@ func TestDelete(t *testing.T) {
 			res, err := impl.Delete(test.ctx, test.req)
 
 			require.Equal(t, res, test.expected)
-			require.Equal(t, err, test.err)
+			if err != nil && test.err != nil {
+				require.Equal(t, test.err.Error(), err.Error())
+			} else {
+				require.Equal(t, test.err, err)
+			}
 		})
 	}
 }

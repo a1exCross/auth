@@ -5,6 +5,8 @@ import (
 	"strconv"
 
 	"github.com/a1exCross/auth/internal/model"
+
+	"github.com/a1exCross/common/pkg/filter"
 )
 
 func (s *serv) Get(ctx context.Context, id int64) (*model.User, error) {
@@ -13,7 +15,12 @@ func (s *serv) Get(ctx context.Context, id int64) (*model.User, error) {
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
 
-		user, errTx = s.userRepo.GetByID(ctx, id)
+		conditions := filter.MakeFilter(filter.Condition{
+			Key:   model.IDFieldCode,
+			Value: id,
+		})
+
+		user, errTx = s.userRepo.Get(ctx, conditions)
 		if errTx != nil {
 			return errTx
 		}

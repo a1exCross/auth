@@ -17,6 +17,12 @@ const (
 	ADMIN
 )
 
+// Поля таблиц
+const (
+	IDFieldCode       = "id"
+	UserNameFieldCode = "username"
+)
+
 // User - структура, описывающая пользователя в БД
 type User struct {
 	ID        int64        `db:"id"`

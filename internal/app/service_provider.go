@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 
 	accessAPI "github.com/a1exCross/auth/internal/api/access"
@@ -154,9 +155,26 @@ func (s *serviceProvider) RedisClient() storage.Redis {
 		closer.Add(cl.Close)
 
 		s.redisClient = cl
+
+		s.routesMigrate()
 	}
 
 	return s.redisClient
+}
+
+func (s *serviceProvider) routesMigrate() {
+	routes := s.RedisConfig().RoutesAccesses()
+
+	for route, roles := range routes {
+		rolesJSON, err := json.Marshal(roles)
+		if err != nil {
+			log.Fatalf("error at json marshal")
+		}
+		_, err = s.RedisClient().Set(route, rolesJSON, 0).Result()
+		if err != nil {
+			log.Fatalf("error at migration routes to redis")
+		}
+	}
 }
 
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
@@ -250,7 +268,6 @@ func (s *serviceProvider) AuthImplementation(ctx context.Context) *authAPI.Imple
 	if s.authImpl == nil {
 		s.authImpl = authAPI.NewImplementation(
 			s.AuthService(ctx),
-			s.AccessChecker(ctx),
 		)
 	}
 

@@ -7,6 +7,8 @@ import (
 	"github.com/a1exCross/auth/internal/model"
 	"github.com/a1exCross/auth/internal/utils"
 
+	"github.com/a1exCross/common/pkg/filter"
+
 	"github.com/go-redis/redis"
 	"github.com/pkg/errors"
 )
@@ -83,13 +85,19 @@ func (s *serv) getUserInfoFromStorage(ctx context.Context, username string) (*mo
 
 	res, err := s.redis.Get(username).Result()
 	if errors.Is(err, redis.Nil) {
-		user, errRep := s.userRepo.GetByUsername(ctx, username)
+		conditions := filter.MakeFilter(filter.Condition{
+			Key:   model.UserNameFieldCode,
+			Value: username,
+		})
+
+		user, errRep := s.userRepo.Get(ctx, conditions)
 		if errRep != nil {
 			return nil, errRep
 		}
 
 		info = &user.Info
-	} else if err != nil {
+	}
+	if err != nil {
 		return nil, err
 	}
 
@@ -107,7 +115,8 @@ func (s *serv) checkTokenRefresh(refreshToken string) error {
 	_, err := s.redis.Get(refreshToken).Result()
 	if errors.Is(err, redis.Nil) {
 		return nil
-	} else if err != nil {
+	}
+	if err != nil {
 		return err
 	}
 

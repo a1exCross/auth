@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net"
 	"os"
+
+	"github.com/a1exCross/auth/internal/model"
 )
 
 const (
@@ -48,4 +50,17 @@ func (cfg *redisConfig) Address() string {
 
 func (cfg *redisConfig) Password() string {
 	return cfg.password
+}
+
+func (cfg *redisConfig) RoutesAccesses() map[string][]model.UserRole {
+	return map[string][]model.UserRole{
+		"/chat_v1.ChatV1/SendMessage": {model.USER},
+		"/chat_v1.ChatV1/Create":      {model.USER},
+		"/chat_v1.ChatV1/Delete":      {model.ADMIN},
+
+		"/user_v1.UserV1/Update": {model.USER},
+		"/user_v1.UserV1/Get":    {model.USER},
+		"/user_v1.UserV1/Create": {model.USER},
+		"/user_v1.UserV1/Delete": {model.ADMIN},
+	}
 }

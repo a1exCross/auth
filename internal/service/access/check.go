@@ -5,14 +5,12 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/a1exCross/auth/internal/model"
-
 	"google.golang.org/grpc/metadata"
 )
 
 const authPrefix = "Bearer "
 
-func (s *serv) Check(ctx context.Context, roles ...model.UserRole) error {
+func (s *serv) Check(ctx context.Context, endpoint string) error {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return errors.New("metadata is not provided")
@@ -29,7 +27,7 @@ func (s *serv) Check(ctx context.Context, roles ...model.UserRole) error {
 
 	accessToken := strings.TrimPrefix(authHeader[0], authPrefix)
 
-	access, err := s.accessChecker.AccessCheck(ctx, accessToken, roles...)
+	access, err := s.accessChecker.AccessCheck(ctx, accessToken, endpoint)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,8 @@ package config
 import (
 	"time"
 
+	"github.com/a1exCross/auth/internal/model"
+
 	"github.com/joho/godotenv"
 )
 
@@ -20,6 +22,7 @@ func Load(path string) error {
 type RedisConfig interface {
 	Address() string
 	Password() string
+	RoutesAccesses() map[string][]model.UserRole
 }
 
 // SwaggerConfig - конфиг swagger

@@ -77,6 +77,7 @@ func TestGet(t *testing.T) {
 				dbb.ScanOneContextMock.Set(func(ctx context.Context, dest interface{}, q db.Query, args ...interface{}) (err error) {
 					res, ok := dest.(*model.User)
 					if ok {
+						res.ID = user.ID
 						res.Info = user.Info
 						res.CreatedAt = user.CreatedAt
 						res.UpdatedAt = user.UpdatedAt

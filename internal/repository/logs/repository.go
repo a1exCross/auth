@@ -10,6 +10,7 @@ import (
 	"github.com/a1exCross/common/pkg/client/db"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -41,7 +42,7 @@ func (r repo) Create(ctx context.Context, params model.Log) (int64, error) {
 
 	query, args, err := insertBuilder.ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("error at parse sql builder: %v", err)
+		return 0, errors.Errorf("error at parse sql builder: %v", err)
 	}
 
 	var id int64
@@ -53,7 +54,7 @@ func (r repo) Create(ctx context.Context, params model.Log) (int64, error) {
 
 	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("error at query to database: %v", err)
+		return 0, errors.Errorf("error at query to database: %v", err)
 	}
 
 	return id, nil
@@ -67,7 +68,7 @@ func (r repo) Get(ctx context.Context, id int64) (model.Log, error) {
 
 	query, args, err := selectBuilder.ToSql()
 	if err != nil {
-		return model.Log{}, fmt.Errorf("error at parse sql builder: %v", err)
+		return model.Log{}, errors.Errorf("error at parse sql builder: %v", err)
 	}
 
 	q := db.Query{
@@ -79,7 +80,7 @@ func (r repo) Get(ctx context.Context, id int64) (model.Log, error) {
 
 	err = r.db.DB().ScanOneContext(ctx, &log, q, args...)
 	if err != nil {
-		return model.Log{}, fmt.Errorf("error at query to database: %v", err)
+		return model.Log{}, errors.Errorf("error at query to database: %v", err)
 	}
 
 	return log, nil

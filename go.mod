@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/a1exCross/common v0.0.0-20240330220057-02755c7ac2c1
+	github.com/a1exCross/common v0.0.0-20240331184326-287fbcac63f0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v1.0.4
 	github.com/go-redis/redis v6.15.9+incompatible
