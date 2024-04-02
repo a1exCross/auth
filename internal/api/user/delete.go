@@ -11,7 +11,12 @@ import (
 
 // Delete принимает и обрабатывает запрос на удаление пользователя
 func (i *Implementation) Delete(ctx context.Context, req *pbUser.DeleteRequest) (*empty.Empty, error) {
-	err := i.userService.Delete(ctx, req.Id)
+	err := i.accessService.Check(ctx, "/user_v1.UserV1/Delete")
+	if err != nil {
+		return nil, err
+	}
+
+	err = i.userService.Delete(ctx, req.Id)
 	if err != nil {
 		return nil, errors.Errorf("failed to delete user: %v", err)
 	}

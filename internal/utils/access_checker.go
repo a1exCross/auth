@@ -17,7 +17,7 @@ import (
 
 // AccessChecker - верификатор доступа
 type AccessChecker interface {
-	AccessCheck(ctx context.Context, string, endpoint string) (bool, error)
+	AccessCheck(ctx context.Context, token string, endpoint string) (bool, error)
 }
 
 type routeAccessChecker struct {

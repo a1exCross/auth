@@ -258,7 +258,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 
 func (s *serviceProvider) UserImplementation(ctx context.Context) *userAPI.Implementation {
 	if s.userImpl == nil {
-		s.userImpl = userAPI.NewImplementation(s.UserService(ctx))
+		s.userImpl = userAPI.NewImplementation(s.UserService(ctx), s.AccessService(ctx))
 	}
 
 	return s.userImpl

@@ -8,12 +8,14 @@ import (
 // Implementation - структура, описывающая имплементацию gRPC сервера
 type Implementation struct {
 	userPb.UnimplementedUserV1Server
-	userService service.UserService
+	userService   service.UserService
+	accessService service.AccessService
 }
 
 // NewImplementation - создает новую имплементацию для gRPC сервера
-func NewImplementation(service service.UserService) *Implementation {
+func NewImplementation(service service.UserService, access service.AccessService) *Implementation {
 	return &Implementation{
-		userService: service,
+		userService:   service,
+		accessService: access,
 	}
 }

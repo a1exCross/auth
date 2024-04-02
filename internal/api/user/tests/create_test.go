@@ -22,6 +22,7 @@ func TestCreate(t *testing.T) {
 	ctx := context.Background()
 
 	type mockAction func(mc minimock.MockController) service.UserService
+	type mockAccess func(mc minimock.MockController) service.AccessService
 
 	correctReq := user_v1.CreateRequest{
 		Info: &user_v1.UserInfo{
@@ -69,6 +70,7 @@ func TestCreate(t *testing.T) {
 		err        error
 		expected   *user_v1.CreateResponse
 		mockAction mockAction
+		mockAccess
 	}{
 		{
 			name:     "sucessfull test",
@@ -82,6 +84,11 @@ func TestCreate(t *testing.T) {
 
 				return userServiceMock
 			},
+			mockAccess: func(mc minimock.MockController) service.AccessService {
+				mock := mocks.NewAccessServiceMock(mc)
+
+				return mock
+			},
 		},
 		{
 			name:     "mismatch passwords",
@@ -93,6 +100,11 @@ func TestCreate(t *testing.T) {
 				userServiceMock := mocks.NewUserServiceMock(mc)
 
 				return userServiceMock
+			},
+			mockAccess: func(mc minimock.MockController) service.AccessService {
+				mock := mocks.NewAccessServiceMock(mc)
+
+				return mock
 			},
 		},
 		{
@@ -107,6 +119,11 @@ func TestCreate(t *testing.T) {
 
 				return userServiceMock
 			},
+			mockAccess: func(mc minimock.MockController) service.AccessService {
+				mock := mocks.NewAccessServiceMock(mc)
+
+				return mock
+			},
 		},
 	}
 
@@ -116,7 +133,9 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 
 			userServ := test.mockAction(mc)
-			impl := userapi.NewImplementation(userServ)
+			accessServ := test.mockAccess(mc)
+
+			impl := userapi.NewImplementation(userServ, accessServ)
 
 			res, err := impl.Create(test.ctx, test.req)
 
