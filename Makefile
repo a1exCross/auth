@@ -45,6 +45,24 @@ generate-user-api:
 	--plugin=protoc-gen-openapiv2=bin/protoc-gen-openapiv2 \
 	api/user_v1/user.proto
 
+generate-auth-api:
+	mkdir -p pkg/auth_v1
+	protoc --proto_path api/auth_v1 \
+	--go_out=pkg/auth_v1 --go_opt=paths=source_relative \
+	--plugin=protoc-gen-go=bin/protoc-gen-go \
+	--go-grpc_out=pkg/auth_v1 --go-grpc_opt=paths=source_relative \
+	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
+	api/auth_v1/auth.proto
+
+generate-access-api:
+	mkdir -p pkg/access_v1
+	protoc --proto_path api/access_v1 \
+	--go_out=pkg/access_v1 --go_opt=paths=source_relative \
+	--plugin=protoc-gen-go=bin/protoc-gen-go \
+	--go-grpc_out=pkg/access_v1 --go-grpc_opt=paths=source_relative \
+	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
+	api/access_v1/access.proto
+
 go-build:
 	go build -o ./build/auth_server cmd/server/main.go
 

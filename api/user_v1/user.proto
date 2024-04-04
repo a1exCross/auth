@@ -78,9 +78,11 @@ message UserPassword {
 message UserInfo {
     // Имя пользователя
     string name = 1 [(validate.rules).string = {ignore_empty: false}];
+    // Имя учетной записи
+    string username = 2 [(validate.rules).string = {ignore_empty: false}];
     // Почта пользователя
-    string email = 2 [(validate.rules).string = {ignore_empty: false}];
-    UserRole role = 3 [(validate.rules).enum = {defined_only: true}];
+    string email = 3 [(validate.rules).string = {ignore_empty: false}];
+    UserRole role = 4 [(validate.rules).enum = {defined_only: true}];
 }
 
 message User {

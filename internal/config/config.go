@@ -1,6 +1,12 @@
 package config
 
-import "github.com/joho/godotenv"
+import (
+	"time"
+
+	"github.com/a1exCross/auth/internal/model"
+
+	"github.com/joho/godotenv"
+)
 
 // Load - парсит .env
 func Load(path string) error {
@@ -10,6 +16,13 @@ func Load(path string) error {
 	}
 
 	return nil
+}
+
+// RedisConfig - конфиг Redis
+type RedisConfig interface {
+	Address() string
+	Password() string
+	RoutesAccesses() map[string][]model.UserRole
 }
 
 // SwaggerConfig - конфиг swagger
@@ -30,4 +43,12 @@ type GRPCConfig interface {
 // PGConfig - конфиг Postgres
 type PGConfig interface {
 	DSN() string
+}
+
+// JWTConfig - конфиг JWT
+type JWTConfig interface {
+	RefreshSecretKey() []byte
+	RefreshExpirationTime() time.Duration
+	AccessSecretKey() []byte
+	AccessExpirationTime() time.Duration
 }

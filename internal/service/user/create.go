@@ -2,21 +2,37 @@ package userservice
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/a1exCross/auth/internal/model"
+	"github.com/a1exCross/auth/internal/utils"
 
-	"golang.org/x/crypto/bcrypt"
+	"github.com/a1exCross/common/pkg/filter"
+
+	"github.com/pkg/errors"
 )
 
 func (s *serv) Create(ctx context.Context, userParams *model.UserCreate) (int64, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userParams.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return 0, fmt.Errorf("failed hash password: %v", err)
+	conditions := filter.MakeFilter(filter.Condition{
+		Key:   model.UserNameFieldCode,
+		Value: userParams.Info.Username,
+	})
+
+	user, err := s.userRepo.Get(ctx, conditions)
+	if err != nil && err.Error() != utils.UserNotFound {
+		return 0, err
 	}
 
-	userParams.Password = string(hashedPassword)
+	if user != nil {
+		return 0, errors.Errorf(`user with username "%s" already exist`, userParams.Info.Username)
+	}
+
+	hashedPassword, err := utils.HashPassword(userParams.Password)
+	if err != nil {
+		return 0, errors.Errorf("failed hash password: %v", err)
+	}
+
+	userParams.Password = hashedPassword
 
 	var id int64
 

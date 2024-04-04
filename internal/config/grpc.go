@@ -24,7 +24,7 @@ func NewGRPCConfig() (GRPCConfig, error) {
 	}
 
 	port := os.Getenv(grpcPortEnvName)
-	if len(host) == 0 {
+	if len(port) == 0 {
 		return nil, errors.New("grpc port not found in environments")
 	}
 

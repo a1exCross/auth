@@ -4,8 +4,10 @@ go 1.19
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/a1exCross/common v0.0.0-20240317101834-623ba8f8cef6
+	github.com/a1exCross/common v0.0.0-20240331184326-287fbcac63f0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v1.0.4
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gojuno/minimock/v3 v3.3.6
 	github.com/golang/protobuf v1.5.4
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
@@ -34,6 +36,8 @@ require (
 	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
+	github.com/onsi/ginkgo v1.16.5 // indirect
+	github.com/onsi/gomega v1.32.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	golang.org/x/net v0.22.0 // indirect

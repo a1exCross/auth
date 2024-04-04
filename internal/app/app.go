@@ -12,6 +12,8 @@ import (
 
 	"github.com/a1exCross/auth/internal/config"
 	"github.com/a1exCross/auth/internal/interceptor"
+	accesspb "github.com/a1exCross/auth/pkg/access_v1"
+	authPb "github.com/a1exCross/auth/pkg/auth_v1"
 	userPb "github.com/a1exCross/auth/pkg/user_v1"
 	_ "github.com/a1exCross/auth/statik" // инициализация шаблона swagger
 
@@ -232,6 +234,8 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	reflection.Register(a.grpcServer)
 
 	userPb.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImplementation(ctx))
+	authPb.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthImplementation(ctx))
+	accesspb.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessImplementation(ctx))
 
 	return nil
 }

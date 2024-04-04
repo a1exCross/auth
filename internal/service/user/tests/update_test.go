@@ -12,6 +12,8 @@ import (
 	"github.com/a1exCross/common/pkg/client/db"
 	dbmocks "github.com/a1exCross/common/pkg/client/db/mocks"
 	"github.com/a1exCross/common/pkg/client/db/transaction"
+	"github.com/a1exCross/common/pkg/storage"
+	storagemocks "github.com/a1exCross/common/pkg/storage/mocks"
 
 	"github.com/gojuno/minimock/v3"
 	"github.com/jackc/pgconn"
@@ -23,6 +25,7 @@ import (
 func TestUpdate(t *testing.T) {
 	type dbClientMock func(mc *minimock.Controller) db.Client
 	type txManagerMock func(mc *minimock.Controller) db.TxManager
+	type storageMock func(mc *minimock.Controller) storage.Redis
 
 	ctx := context.Background()
 	mc := minimock.NewController(t)
@@ -42,6 +45,7 @@ func TestUpdate(t *testing.T) {
 		expected  int64
 		dbClient  dbClientMock
 		txManager txManagerMock
+		storageMock
 	}{
 		{
 			name: "successfull test",
@@ -82,6 +86,11 @@ func TestUpdate(t *testing.T) {
 				txManager := transaction.NewTransactionManager(transactor)
 
 				return txManager
+			},
+			storageMock: func(mc *minimock.Controller) storage.Redis {
+				mock := storagemocks.NewRedisMock(mc)
+
+				return mock
 			},
 			err: nil,
 		},
@@ -126,6 +135,11 @@ func TestUpdate(t *testing.T) {
 
 				return txManager
 			},
+			storageMock: func(mc *minimock.Controller) storage.Redis {
+				mock := storagemocks.NewRedisMock(mc)
+
+				return mock
+			},
 			err: errors.New("tx commit failed: commit error"),
 		},
 	}
@@ -136,11 +150,12 @@ func TestUpdate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			dbMockClient := test.dbClient(mc)
 			txManager := test.txManager(mc)
+			redis := test.storageMock(mc)
 
 			userRepo := userRepository.NewRepository(dbMockClient)
 			logRepo := logsRepository.NewRepository(dbMockClient)
 
-			userServ := userservice.NewService(userRepo, txManager, logRepo)
+			userServ := userservice.NewService(userRepo, txManager, logRepo, redis)
 
 			err := userServ.Update(ctx, userDTO)
 

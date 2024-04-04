@@ -24,7 +24,7 @@ func NewSwaggerConfig() (SwaggerConfig, error) {
 	}
 
 	port := os.Getenv(swaggerPortEnvName)
-	if len(host) == 0 {
+	if len(port) == 0 {
 		return nil, errors.New("swagger port not found in environments")
 	}
 

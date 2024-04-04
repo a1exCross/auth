@@ -25,6 +25,7 @@ func TestGet(t *testing.T) {
 	ctx := context.Background()
 
 	type mockAction func(mc minimock.MockController) service.UserService
+	type mockAccess func(mc minimock.MockController) service.AccessService
 
 	correctReq := &user_v1.GetRequest{
 		Id: 1,
@@ -68,6 +69,7 @@ func TestGet(t *testing.T) {
 		err        error
 		expected   *user_v1.GetResponse
 		mockAction mockAction
+		mockAccess
 	}{
 		{
 			name:     "sucessfull test",
@@ -80,6 +82,11 @@ func TestGet(t *testing.T) {
 				userServiceMock.GetMock.Expect(ctx, id).Return(resGet, nil)
 
 				return userServiceMock
+			},
+			mockAccess: func(mc minimock.MockController) service.AccessService {
+				mock := mocks.NewAccessServiceMock(mc)
+
+				return mock
 			},
 		},
 		{
@@ -94,6 +101,11 @@ func TestGet(t *testing.T) {
 
 				return userServiceMock
 			},
+			mockAccess: func(mc minimock.MockController) service.AccessService {
+				mock := mocks.NewAccessServiceMock(mc)
+
+				return mock
+			},
 		},
 	}
 
@@ -103,12 +115,18 @@ func TestGet(t *testing.T) {
 			t.Parallel()
 
 			userServ := test.mockAction(mc)
-			impl := userapi.NewImplementation(userServ)
+			accessServ := test.mockAccess(mc)
+
+			impl := userapi.NewImplementation(userServ, accessServ)
 
 			res, err := impl.Get(test.ctx, test.req)
 
 			require.Equal(t, res, test.expected)
-			require.Equal(t, err, test.err)
+			if err != nil && test.err != nil {
+				require.Equal(t, test.err.Error(), err.Error())
+			} else {
+				require.Equal(t, test.err, err)
+			}
 		})
 	}
 }

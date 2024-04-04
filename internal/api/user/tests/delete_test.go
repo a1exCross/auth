@@ -22,6 +22,7 @@ func TestDelete(t *testing.T) {
 	ctx := context.Background()
 
 	type mockAction func(mc minimock.MockController) service.UserService
+	type mockAccess func(mc minimock.MockController) service.AccessService
 
 	id := int64(1)
 
@@ -36,6 +37,7 @@ func TestDelete(t *testing.T) {
 		err        error
 		expected   *empty.Empty
 		mockAction mockAction
+		mockAccess
 	}{
 		{
 			name:     "sucessfull test",
@@ -48,6 +50,12 @@ func TestDelete(t *testing.T) {
 				userServiceMock.DeleteMock.Expect(ctx, id).Return(nil)
 
 				return userServiceMock
+			},
+			mockAccess: func(mc minimock.MockController) service.AccessService {
+				mock := mocks.NewAccessServiceMock(mc)
+				mock.CheckMock.Return(nil)
+
+				return mock
 			},
 		},
 		{
@@ -62,6 +70,12 @@ func TestDelete(t *testing.T) {
 
 				return userServiceMock
 			},
+			mockAccess: func(mc minimock.MockController) service.AccessService {
+				mock := mocks.NewAccessServiceMock(mc)
+				mock.CheckMock.Return(nil)
+
+				return mock
+			},
 		},
 	}
 
@@ -71,12 +85,18 @@ func TestDelete(t *testing.T) {
 			t.Parallel()
 
 			userServ := test.mockAction(mc)
-			impl := userapi.NewImplementation(userServ)
+			accessServ := test.mockAccess(mc)
+
+			impl := userapi.NewImplementation(userServ, accessServ)
 
 			res, err := impl.Delete(test.ctx, test.req)
 
 			require.Equal(t, res, test.expected)
-			require.Equal(t, err, test.err)
+			if err != nil && test.err != nil {
+				require.Equal(t, test.err.Error(), err.Error())
+			} else {
+				require.Equal(t, test.err, err)
+			}
 		})
 	}
 }

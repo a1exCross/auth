@@ -11,6 +11,8 @@ import (
 	"github.com/a1exCross/common/pkg/client/db"
 	dbmocks "github.com/a1exCross/common/pkg/client/db/mocks"
 	"github.com/a1exCross/common/pkg/client/db/transaction"
+	"github.com/a1exCross/common/pkg/storage"
+	storagemocks "github.com/a1exCross/common/pkg/storage/mocks"
 
 	"github.com/gojuno/minimock/v3"
 	"github.com/jackc/pgconn"
@@ -22,6 +24,7 @@ import (
 func TestDelete(t *testing.T) {
 	type dbClientMock func(mc *minimock.Controller) db.Client
 	type txManagerMock func(mc *minimock.Controller) db.TxManager
+	type storageMock func(mc *minimock.Controller) storage.Redis
 
 	ctx := context.Background()
 	mc := minimock.NewController(t)
@@ -32,6 +35,7 @@ func TestDelete(t *testing.T) {
 		err       error
 		dbClient  dbClientMock
 		txManager txManagerMock
+		storageMock
 	}{
 		{
 			name: "successfull test",
@@ -73,6 +77,11 @@ func TestDelete(t *testing.T) {
 
 				return txManager
 			},
+			storageMock: func(mc *minimock.Controller) storage.Redis {
+				mock := storagemocks.NewRedisMock(mc)
+
+				return mock
+			},
 			err: nil,
 		},
 		{
@@ -96,6 +105,11 @@ func TestDelete(t *testing.T) {
 
 				return txManager
 			},
+			storageMock: func(mc *minimock.Controller) storage.Redis {
+				mock := storagemocks.NewRedisMock(mc)
+
+				return mock
+			},
 			err: errors.New("can`t begin transaction: tx error"),
 		},
 	}
@@ -106,11 +120,12 @@ func TestDelete(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			dbMockClient := test.dbClient(mc)
 			txManager := test.txManager(mc)
+			redis := test.storageMock(mc)
 
 			userRepo := userRepository.NewRepository(dbMockClient)
 			logRepo := logsRepository.NewRepository(dbMockClient)
 
-			userServ := userservice.NewService(userRepo, txManager, logRepo)
+			userServ := userservice.NewService(userRepo, txManager, logRepo, redis)
 
 			err := userServ.Delete(ctx, id)
 

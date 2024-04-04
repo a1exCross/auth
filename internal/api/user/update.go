@@ -2,13 +2,13 @@ package userapi
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/a1exCross/auth/internal/api/user/converter"
 	"github.com/a1exCross/auth/internal/model"
 	pbUser "github.com/a1exCross/auth/pkg/user_v1"
 
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/pkg/errors"
 )
 
 // Update принимает и обрабатывает запрос на обновление пользователя
@@ -18,7 +18,7 @@ func (i *Implementation) Update(ctx context.Context, req *pbUser.UpdateRequest) 
 		ID:   req.Id,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to update user: %v", err)
+		return nil, errors.Errorf("failed to update user: %v", err)
 	}
 
 	return &empty.Empty{}, nil

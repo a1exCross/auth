@@ -2,20 +2,30 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 
+	accessAPI "github.com/a1exCross/auth/internal/api/access"
+	authAPI "github.com/a1exCross/auth/internal/api/auth"
 	userAPI "github.com/a1exCross/auth/internal/api/user"
 	"github.com/a1exCross/auth/internal/config"
 	"github.com/a1exCross/auth/internal/repository"
 	logsRepository "github.com/a1exCross/auth/internal/repository/logs"
 	userRepository "github.com/a1exCross/auth/internal/repository/user"
 	"github.com/a1exCross/auth/internal/service"
+	accessservice "github.com/a1exCross/auth/internal/service/access"
+	authservice "github.com/a1exCross/auth/internal/service/auth"
 	userService "github.com/a1exCross/auth/internal/service/user"
+	"github.com/a1exCross/auth/internal/utils"
 
 	"github.com/a1exCross/common/pkg/client/db"
 	"github.com/a1exCross/common/pkg/client/db/pg"
 	"github.com/a1exCross/common/pkg/client/db/transaction"
 	"github.com/a1exCross/common/pkg/closer"
+	"github.com/a1exCross/common/pkg/storage"
+	cache "github.com/a1exCross/common/pkg/storage/redis"
+
+	"github.com/go-redis/redis"
 )
 
 type serviceProvider struct {
@@ -23,16 +33,25 @@ type serviceProvider struct {
 	grpcConfig    config.GRPCConfig
 	httpConfig    config.HTTPConfig
 	swaggerConfig config.SwaggerConfig
+	redisConfig   config.RedisConfig
+	jwtConfig     config.JWTConfig
 
-	dbClient  db.Client
-	txManager db.TxManager
+	redisClient storage.Redis
+	dbClient    db.Client
+	txManager   db.TxManager
 
 	userRepo repository.UserRepository
 	logsRepo repository.LogsRepository
 
-	userServ service.UserService
+	userServ   service.UserService
+	authServ   service.AuthService
+	accessServ service.AccessService
 
-	userImpl *userAPI.Implementation
+	userImpl   *userAPI.Implementation
+	authImpl   *authAPI.Implementation
+	accessImpl *accessAPI.Implementation
+
+	accessChecker utils.AccessChecker
 }
 
 func newServiceProvider() *serviceProvider {
@@ -91,6 +110,73 @@ func (s *serviceProvider) SwaggerConfig() config.SwaggerConfig {
 	return s.swaggerConfig
 }
 
+func (s *serviceProvider) RedisConfig() config.RedisConfig {
+	if s.redisConfig == nil {
+		cfg, err := config.NewRedisConfig()
+		if err != nil {
+			log.Fatalf("failed to get redis config: %v", err)
+		}
+
+		s.redisConfig = cfg
+	}
+
+	return s.redisConfig
+}
+
+func (s *serviceProvider) JWTConfig() config.JWTConfig {
+	if s.jwtConfig == nil {
+		cfg, err := config.NewJWTConfig()
+		if err != nil {
+			log.Fatalf("failed to get jwt config: %v", err)
+		}
+
+		s.jwtConfig = cfg
+	}
+
+	return s.jwtConfig
+}
+
+func (s *serviceProvider) RedisClient() storage.Redis {
+	if s.redisClient == nil {
+		cl, err := cache.NewRedisConnection(&redis.Options{
+			Addr:     s.RedisConfig().Address(),
+			Password: s.RedisConfig().Password(),
+			DB:       0,
+		})
+		if err != nil {
+			log.Fatalf("failed to create redis client: %v", err)
+		}
+
+		err = cl.Ping()
+		if err != nil {
+			log.Fatalf("ping error: %v", err)
+		}
+
+		closer.Add(cl.Close)
+
+		s.redisClient = cl
+
+		s.routesMigrate()
+	}
+
+	return s.redisClient
+}
+
+func (s *serviceProvider) routesMigrate() {
+	routes := s.RedisConfig().RoutesAccesses()
+
+	for route, roles := range routes {
+		rolesJSON, err := json.Marshal(roles)
+		if err != nil {
+			log.Fatalf("error at json marshal")
+		}
+		_, err = s.RedisClient().Set(route, rolesJSON, 0).Result()
+		if err != nil {
+			log.Fatalf("error at migration routes to redis")
+		}
+	}
+}
+
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
 		cl, err := pg.New(ctx, s.PGConfig().DSN())
@@ -141,16 +227,69 @@ func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 			s.UserRepository(ctx),
 			s.TxManager(ctx),
 			s.LogsRepository(ctx),
+			s.RedisClient(),
 		)
 	}
 
 	return s.userServ
 }
 
+func (s *serviceProvider) AccessService(ctx context.Context) service.AccessService {
+	if s.accessServ == nil {
+		s.accessServ = accessservice.NewService(
+			s.JWTConfig(),
+			s.AccessChecker(ctx))
+	}
+
+	return s.accessServ
+}
+
+func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
+	if s.authServ == nil {
+		s.authServ = authservice.NewService(
+			s.RedisClient(),
+			s.UserRepository(ctx),
+			s.JWTConfig(),
+		)
+	}
+
+	return s.authServ
+}
+
 func (s *serviceProvider) UserImplementation(ctx context.Context) *userAPI.Implementation {
 	if s.userImpl == nil {
-		s.userImpl = userAPI.NewImplementation(s.UserService(ctx))
+		s.userImpl = userAPI.NewImplementation(s.UserService(ctx), s.AccessService(ctx))
 	}
 
 	return s.userImpl
+}
+
+func (s *serviceProvider) AuthImplementation(ctx context.Context) *authAPI.Implementation {
+	if s.authImpl == nil {
+		s.authImpl = authAPI.NewImplementation(
+			s.AuthService(ctx),
+		)
+	}
+
+	return s.authImpl
+}
+
+func (s *serviceProvider) AccessImplementation(ctx context.Context) *accessAPI.Implementation {
+	if s.accessImpl == nil {
+		s.accessImpl = accessAPI.NewImplementation(s.AccessService(ctx))
+	}
+
+	return s.accessImpl
+}
+
+func (s *serviceProvider) AccessChecker(ctx context.Context) utils.AccessChecker {
+	if s.accessChecker == nil {
+		s.accessChecker = utils.NewRouteAccessChecker(
+			s.JWTConfig(),
+			s.RedisClient(),
+			s.UserRepository(ctx),
+		)
+	}
+
+	return s.accessChecker
 }
