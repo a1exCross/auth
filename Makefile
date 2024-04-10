@@ -118,3 +118,23 @@ vendor-proto:
 				mv vendor.protogen/openapiv2/protoc-gen-openapiv2/options/*.proto vendor.protogen/protoc-gen-openapiv2/options &&\
 				rm -rf vendor.protogen/openapiv2 ;\
 		fi
+
+grpc-load-test:
+	ghz \
+		--proto api/auth_v1/auth.proto \
+		--call auth_v1.AuthV1.Login \
+		--data '{"username": "a1exCross", "password":"1234567890"}' \
+		--rps 100 \
+		--total 3000 \
+		--insecure \
+		localhost:50051
+
+grpc-error-load-test:
+	ghz \
+		--proto api/auth_v1/auth.proto \
+		--call auth_v1.AuthV1.Login \
+		--data '{"username": "a1exCross1", "password":"1234567890"}' \
+		--rps 100 \
+		--total 3000 \
+		--insecure \
+		localhost:50051

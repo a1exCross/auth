@@ -7,11 +7,15 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/a1exCross/auth/internal/config"
 	"github.com/a1exCross/auth/internal/interceptor"
+	"github.com/a1exCross/auth/internal/logger"
+	"github.com/a1exCross/auth/internal/metric"
+	"github.com/a1exCross/auth/internal/tracing"
 	accesspb "github.com/a1exCross/auth/pkg/access_v1"
 	authPb "github.com/a1exCross/auth/pkg/auth_v1"
 	userPb "github.com/a1exCross/auth/pkg/user_v1"
@@ -20,17 +24,22 @@ import (
 	"github.com/a1exCross/common/pkg/closer"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 // APISwaggerPath - Путь к swagger json
 const APISwaggerPath = "/api.swagger.json"
 
 var configPath string
+var logLevel = flag.String("level", "info", "log level for logger")
 
 func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
@@ -38,10 +47,11 @@ func init() {
 
 // App является структурой точки входа в приложение
 type App struct {
-	serviceProvider *serviceProvider
-	grpcServer      *grpc.Server
-	httpServer      *http.Server
-	swaggerServer   *http.Server
+	serviceProvider  *serviceProvider
+	grpcServer       *grpc.Server
+	httpServer       *http.Server
+	swaggerServer    *http.Server
+	prometheusServer *http.Server
 }
 
 // NewApp - точка входа в приложение
@@ -65,7 +75,7 @@ func (a *App) Run() error {
 
 	var wg sync.WaitGroup
 
-	wg.Add(3)
+	wg.Add(4)
 
 	go func() {
 		defer wg.Done()
@@ -94,6 +104,15 @@ func (a *App) Run() error {
 		}
 	}()
 
+	go func() {
+		defer wg.Done()
+
+		err := a.runPrometheus()
+		if err != nil {
+			log.Fatalf("failed to run prometheus server: %v", err)
+		}
+	}()
+
 	wg.Wait()
 
 	return nil
@@ -106,6 +125,9 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initGRPCServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
+		a.initLogger,
+		a.initPrometheus,
+		a.initTracing,
 	}
 
 	for _, f := range inits {
@@ -228,7 +250,11 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 func (a *App) initGRPCServer(ctx context.Context) error {
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(insecure.NewCredentials()),
-		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+		grpc.ChainUnaryInterceptor(
+			interceptor.ValidateInterceptor,
+			interceptor.LoggingInterceptor,
+			interceptor.ServerTracingInterceptor,
+		),
 	)
 
 	reflection.Register(a.grpcServer)
@@ -238,6 +264,69 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	accesspb.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessImplementation(ctx))
 
 	return nil
+}
+
+func (a *App) initPrometheus(ctx context.Context) error {
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+
+	a.prometheusServer = &http.Server{
+		ReadHeaderTimeout: 0,
+		Addr:              a.serviceProvider.PrometheusConfig().Address(),
+		Handler:           mux,
+	}
+
+	return metric.Init(ctx)
+}
+
+func (a *App) initLogger(_ context.Context) error {
+	logger.Init(a.getCore(a.getLevel()))
+
+	return nil
+}
+
+func (a *App) initTracing(_ context.Context) error {
+	tracing.Init("auth-service")
+
+	return nil
+}
+
+func (a *App) getCore(level zap.AtomicLevel) zapcore.Core {
+	stdout := zapcore.AddSync(os.Stdout)
+
+	file := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   "logs/app.log",
+		MaxSize:    10, //mb
+		MaxBackups: 3,
+		MaxAge:     7, //days
+	})
+
+	productionCfg := zap.NewProductionEncoderConfig()
+	productionCfg.TimeKey = "timestamp"
+	productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	developmentCfg := zap.NewDevelopmentEncoderConfig()
+	developmentCfg.EncodeLevel = zapcore.CapitalLevelEncoder
+
+	consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
+	fileEncoder := zapcore.NewJSONEncoder(productionCfg)
+
+	return zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, stdout, level),
+		zapcore.NewCore(fileEncoder, file, level),
+	)
+}
+
+func (a *App) getLevel() zap.AtomicLevel {
+	flag.Parse()
+
+	var level zapcore.Level
+
+	if err := level.Set(*logLevel); err != nil {
+		log.Fatalf("failed to set log level")
+	}
+
+	return zap.NewAtomicLevelAt(level)
 }
 
 func (a *App) runSwaggerServer() error {
@@ -271,6 +360,17 @@ func (a *App) runGRPCServer() error {
 	log.Printf("Listen and serve at %s", a.serviceProvider.GRPCConfig().Address())
 
 	err = a.grpcServer.Serve(lis)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *App) runPrometheus() error {
+	log.Printf("Prometheus server listening at %s", a.serviceProvider.PrometheusConfig().Address())
+
+	err := a.prometheusServer.ListenAndServe()
 	if err != nil {
 		return err
 	}

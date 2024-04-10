@@ -6,6 +6,8 @@ import (
 	"github.com/a1exCross/auth/internal/model"
 
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Load - парсит .env
@@ -51,4 +53,15 @@ type JWTConfig interface {
 	RefreshExpirationTime() time.Duration
 	AccessSecretKey() []byte
 	AccessExpirationTime() time.Duration
+}
+
+// LoggerConfig - конфиг логгера
+type LoggerConfig interface {
+	getCore() zapcore.Core
+	getLogLevel() zap.AtomicLevel
+}
+
+// PrometheusConfig - конфиг prometheus
+type PrometheusConfig interface {
+	Address() string
 }
