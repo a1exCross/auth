@@ -13,7 +13,6 @@ run:
   skip-files:
     - \.pb\.go$
     - \.pb\.gw\.go$
-modules-download-mode: readonly
 
 output:
   format: colored-line-number
