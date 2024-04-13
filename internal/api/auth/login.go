@@ -4,8 +4,9 @@ import (
 	"context"
 
 	"github.com/a1exCross/auth/internal/api/auth/converter"
-	"github.com/a1exCross/auth/internal/logger"
 	"github.com/a1exCross/auth/pkg/auth_v1"
+
+	"github.com/a1exCross/common/pkg/logger"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"

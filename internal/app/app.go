@@ -13,7 +13,6 @@ import (
 
 	"github.com/a1exCross/auth/internal/config"
 	"github.com/a1exCross/auth/internal/interceptor"
-	"github.com/a1exCross/auth/internal/logger"
 	"github.com/a1exCross/auth/internal/metric"
 	"github.com/a1exCross/auth/internal/tracing"
 	accesspb "github.com/a1exCross/auth/pkg/access_v1"
@@ -22,6 +21,7 @@ import (
 	_ "github.com/a1exCross/auth/statik" // инициализация шаблона swagger
 
 	"github.com/a1exCross/common/pkg/closer"
+	"github.com/a1exCross/common/pkg/logger"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -37,6 +37,11 @@ import (
 
 // APISwaggerPath - Путь к swagger json
 const APISwaggerPath = "/api.swagger.json"
+const (
+	loggerMaxSize    = 10
+	loggerMaxBackups = 3
+	loggerMaxAge     = 3
+)
 
 var configPath string
 var logLevel = flag.String("level", "info", "log level for logger")
@@ -127,6 +132,7 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initSwaggerServer,
 		a.initLogger,
 		a.initPrometheus,
+		a.initMetrics,
 		a.initTracing,
 	}
 
@@ -254,6 +260,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 			interceptor.ValidateInterceptor,
 			interceptor.LoggingInterceptor,
 			interceptor.ServerTracingInterceptor,
+			interceptor.MetricsInterceptor,
 		),
 	)
 
@@ -266,7 +273,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) initPrometheus(ctx context.Context) error {
+func (a *App) initPrometheus(_ context.Context) error {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 
@@ -276,6 +283,10 @@ func (a *App) initPrometheus(ctx context.Context) error {
 		Handler:           mux,
 	}
 
+	return nil
+}
+
+func (a *App) initMetrics(ctx context.Context) error {
 	return metric.Init(ctx)
 }
 
@@ -296,9 +307,9 @@ func (a *App) getCore(level zap.AtomicLevel) zapcore.Core {
 
 	file := zapcore.AddSync(&lumberjack.Logger{
 		Filename:   "logs/app.log",
-		MaxSize:    10, //mb
-		MaxBackups: 3,
-		MaxAge:     7, //days
+		MaxSize:    loggerMaxSize, //mb
+		MaxBackups: loggerMaxBackups,
+		MaxAge:     loggerMaxAge,
 	})
 
 	productionCfg := zap.NewProductionEncoderConfig()

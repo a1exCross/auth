@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/a1exCross/auth/internal/logger"
 	accesspb "github.com/a1exCross/auth/pkg/access_v1"
+
+	"github.com/a1exCross/common/pkg/logger"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"go.uber.org/zap"

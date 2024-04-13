@@ -1,7 +1,7 @@
 package tracing
 
 import (
-	"github.com/a1exCross/auth/internal/logger"
+	"github.com/a1exCross/common/pkg/logger"
 
 	"github.com/uber/jaeger-client-go/config"
 	"go.uber.org/zap"
