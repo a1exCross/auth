@@ -29,12 +29,13 @@ import (
 )
 
 type serviceProvider struct {
-	pgConfig      config.PGConfig
-	grpcConfig    config.GRPCConfig
-	httpConfig    config.HTTPConfig
-	swaggerConfig config.SwaggerConfig
-	redisConfig   config.RedisConfig
-	jwtConfig     config.JWTConfig
+	pgConfig         config.PGConfig
+	grpcConfig       config.GRPCConfig
+	httpConfig       config.HTTPConfig
+	swaggerConfig    config.SwaggerConfig
+	redisConfig      config.RedisConfig
+	jwtConfig        config.JWTConfig
+	prometheusConfig config.PrometheusConfig
 
 	redisClient storage.Redis
 	dbClient    db.Client
@@ -95,6 +96,19 @@ func (s *serviceProvider) HTTPConfig() config.HTTPConfig {
 	}
 
 	return s.httpConfig
+}
+
+func (s *serviceProvider) PrometheusConfig() config.PrometheusConfig {
+	if s.prometheusConfig == nil {
+		cfg, err := config.NewPrometheusConfig()
+		if err != nil {
+			log.Fatalf("failed to get prometheus config: %v", err)
+		}
+
+		s.prometheusConfig = cfg
+	}
+
+	return s.prometheusConfig
 }
 
 func (s *serviceProvider) SwaggerConfig() config.SwaggerConfig {
